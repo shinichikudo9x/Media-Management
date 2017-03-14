@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvDate"
+        android:padding="10dp"
+        android:clickable="false"
+        android:visibility="gone"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="center"
+            android:layout_centerInParent="true"
+            android:id="@+id/display_image"
+            android:padding="2dp"/>
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/btnPlay"
+            android:scaleType="fitCenter"
+            android:src="@drawable/play_icon"
+            android:layout_centerInParent="true"
+            android:visibility="gone"/>
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/btnPause"
+            android:scaleType="fitCenter"
+            android:src="@drawable/pause_icon"
+            android:visibility="gone"
+            android:layout_centerInParent="true"/>
+
+        <CheckBox
+            android:text=""
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:id="@+id/cbSelected"
+            android:visibility="gone"/>
+    </RelativeLayout>
+
+
+</LinearLayout>
