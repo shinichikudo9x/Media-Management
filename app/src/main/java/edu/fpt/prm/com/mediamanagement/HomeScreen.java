@@ -1,11 +1,15 @@
 package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -20,9 +24,13 @@ import android.widget.ListView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import entry.MediaEntry;
+import take.photo.TakePhoto;
 import tools.AlbumTool;
 
 public class HomeScreen extends AppCompatActivity {
@@ -174,5 +182,25 @@ public class HomeScreen extends AppCompatActivity {
             // permissions this app might request
         }
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1 && resultCode == RESULT_OK) {
+            recreate();
+        }
+
+    }
+
+    public void takePhoto(View v){
+        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy-hh:mm");
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "IMG-"+format.format(new Date()));
+        values.put(MediaStore.Images.Media.DESCRIPTION, "");
+        Uri imageUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, 1);
     }
 }
