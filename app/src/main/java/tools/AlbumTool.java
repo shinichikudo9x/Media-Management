@@ -1,23 +1,20 @@
-package edu.fpt.prm.com.mediamanagement;
+package tools;
 
 import android.content.Context;
-import android.content.CursorLoader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.TreeMap;
+
+import entry.MediaEntry;
 
 /**
  * Created by HuongLX on 3/12/2017.
  */
 
-public class ListAlbum {
+public class AlbumTool {
 
     public static ArrayList<MediaEntry> getAllListAlbum(Context context){
         ArrayList<MediaEntry> list = new ArrayList<>();
@@ -64,6 +61,7 @@ public class ListAlbum {
                 MediaStore.Files.FileColumns.DATE_ADDED + " DESC");  // Sort order.):
         String lastDate = "";
         while(cursor.moveToNext()){
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID));
             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.TITLE));
             String path = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
             Long dateAdded = cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED));
@@ -82,7 +80,7 @@ public class ListAlbum {
                 description = cursor.getString(cursor.getColumnIndex(MediaStore.Video.VideoColumns.DESCRIPTION));
             }
 
-            MediaEntry media = new MediaEntry(path, title, dateAdded, latitude, longtitude, description, tag, album, artist, type);
+            MediaEntry media = new MediaEntry(id, path, title, dateAdded, latitude, longtitude, description, tag, album, artist, type);
             list.add(media);
         }
         cursor.close();
@@ -135,6 +133,7 @@ public class ListAlbum {
                 MediaStore.Files.FileColumns.DATE_ADDED + " DESC");  // Sort order.):
         String lastDate ="";
         while(cursor.moveToNext()){
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID));
             String title = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.TITLE));
             String path = cursor.getString(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATA));
             Long dateAdded = cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns.DATE_ADDED));
@@ -153,10 +152,28 @@ public class ListAlbum {
                 description = cursor.getString(cursor.getColumnIndex(MediaStore.Video.VideoColumns.DESCRIPTION));
             }
 
-            MediaEntry media = new MediaEntry(path, title, dateAdded, latitude, longtitude, description, tag, album, artist, type);
+            MediaEntry media = new MediaEntry(id, path, title, dateAdded, latitude, longtitude, description, tag, album, artist, type);
             list.add(media);
         }
         cursor.close();
         return list.isEmpty()?null:list;
+    }
+    public static int deleteById(Context context, int id){
+        Uri queryUri = MediaStore.Files.getContentUri("external");
+        String[] projection = {
+                MediaStore.Files.FileColumns._ID,
+                MediaStore.Files.FileColumns.MEDIA_TYPE
+        };
+
+// Return only video and image metadata.
+        String where = "("+MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                + " OR "
+                + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO+") AND("
+                + MediaStore.Files.FileColumns._ID +" = "+id+")";
+        int idCol = context.getContentResolver().delete(queryUri,where,null);
+
+        return idCol;
     }
 }

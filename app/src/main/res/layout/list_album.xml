@@ -18,7 +18,8 @@
             android:scaleType="center"
             android:layout_centerInParent="true"
             android:id="@+id/display_image"
-            android:padding="2dp"/>
+            android:padding="2dp"
+            android:background="?android:attr/activatedBackgroundIndicator"/>
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"

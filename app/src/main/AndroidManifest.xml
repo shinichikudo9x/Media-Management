@@ -30,7 +30,10 @@
         <activity
             android:name=".ViewFile"
             android:label="@string/title_activity_view_file"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme"></activity>
+        <activity android:name="take.photo.TakePhoto"
+            android:label="TakePhoto"
+            android:theme="@style/AppTheme"/>
     </application>
 
 </manifest>

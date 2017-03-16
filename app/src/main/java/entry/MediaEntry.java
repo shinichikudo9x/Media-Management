@@ -1,12 +1,4 @@
-package edu.fpt.prm.com.mediamanagement;
-
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Location;
-import android.media.ThumbnailUtils;
-import android.provider.MediaStore;
-
-import java.sql.Date;
+package entry;
 
 
 /**
@@ -14,6 +6,7 @@ import java.sql.Date;
  */
 
 public class MediaEntry {
+    private int id;
     private String path;
     private String title;
     private Long dateAdded;
@@ -25,7 +18,8 @@ public class MediaEntry {
     private String artist;
     private int type;
 
-    public MediaEntry(String path, String title, Long dateAdded, String latitude, String longtitude, String description, String tag, String album, String artist, int type) {
+    public MediaEntry(int id, String path, String title, Long dateAdded, String latitude, String longtitude, String description, String tag, String album, String artist, int type) {
+        this.id = id;
         this.path = path;
         this.title = title;
         this.dateAdded = dateAdded;
@@ -36,6 +30,14 @@ public class MediaEntry {
         this.album = album;
         this.artist = artist;
         this.type = type;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getPath() {

@@ -2,14 +2,13 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,36 +16,26 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 
+import entry.MediaEntry;
+import tools.DateTimeUtils;
+
 /**
  * Created by HuongLX on 3/14/2017.
  */
 
-public class ListViewCustom extends BaseAdapter {
+public class ListViewCustom extends ArrayAdapter<MediaEntry> {
     private Context context;
     ArrayList<MediaEntry> items;
     ImageLoader loader;
     LayoutInflater inflater;
+    private SparseBooleanArray mSelectedItemsIds;
 
-    public ListViewCustom(Context context, ArrayList<MediaEntry> items, ImageLoader loader) {
-        this.context = context;
+    public ListViewCustom(Context context, int resource, ArrayList<MediaEntry> items,ImageLoader loader) {
+        super(context, resource,items);
+        mSelectedItemsIds = new SparseBooleanArray();
+        inflater = LayoutInflater.from(context);
         this.items = items;
         this.loader = loader;
-        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    }
-
-    @Override
-    public int getCount() {
-        return items.size();
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return items.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
     }
 
     @Override
@@ -87,5 +76,39 @@ public class ListViewCustom extends BaseAdapter {
             btnPlay.setVisibility(View.VISIBLE);
         }
         return view;
+    }
+    @Override
+    public void remove(MediaEntry object) {
+        items.remove(object);
+        notifyDataSetChanged();
+    }
+
+    public ArrayList<MediaEntry> getWorldPopulation() {
+        return items;
+    }
+
+    public void toggleSelection(int position) {
+        selectView(position, !mSelectedItemsIds.get(position));
+    }
+
+    public void removeSelection() {
+        mSelectedItemsIds = new SparseBooleanArray();
+        notifyDataSetChanged();
+    }
+
+    public void selectView(int position, boolean value) {
+        if (value)
+            mSelectedItemsIds.put(position, value);
+        else
+            mSelectedItemsIds.delete(position);
+        notifyDataSetChanged();
+    }
+
+    public int getSelectedCount() {
+        return mSelectedItemsIds.size();
+    }
+
+    public SparseBooleanArray getSelectedIds() {
+        return mSelectedItemsIds;
     }
 }

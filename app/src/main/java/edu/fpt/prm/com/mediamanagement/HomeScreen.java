@@ -1,92 +1,148 @@
 package edu.fpt.prm.com.mediamanagement;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.ListView;
 
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeMap;
+
+import entry.MediaEntry;
+import tools.AlbumTool;
 
 public class HomeScreen extends AppCompatActivity {
 
+    public static final int ALL_PERMISSION = 1;
     ListView listView;
-    int position;
+    ListViewCustom adapter;
+    ArrayList<MediaEntry> list;
+    ImageLoader loader;
+    int cam,read_storage,write_storage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_screen);
-        ImageLoader loader = ImageLoader.getInstance();
+        String[] permission = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.INTERNET
+        };
+        cam = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.CAMERA);
+        read_storage = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        write_storage = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (read_storage < 0 || write_storage < 0 || cam < 0) {
+                requestPermissions(permission, ALL_PERMISSION);
+            }
+        }
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this).build();
         loader = ImageLoader.getInstance();
         loader.init(config);
-        Intent intent = getIntent();
-        position = intent.getIntExtra("position", 0);
-        ArrayList<MediaEntry> list = ListAlbum.getAllListAlbum(this);
         listView = (ListView) findViewById(R.id.listDateAlbum);
-        ListViewCustom adapter = new ListViewCustom(this,list,loader);
-        listView.setAdapter(adapter);
-        listView.setVerticalScrollbarPosition(position);
+
+        Handler handler = new Handler();
+        Runnable refresh = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                    read_storage = ContextCompat.checkSelfPermission(getBaseContext(),
+                            Manifest.permission.READ_EXTERNAL_STORAGE);
+                    if(read_storage==0 && list == null){
+                        list = AlbumTool.getAllListAlbum(getBaseContext());
+                        adapter = new ListViewCustom(getBaseContext(),R.layout.list_album,list,loader);
+                        listView.setAdapter(adapter);
+                    }
+                    if(read_storage<0) run();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+//
+            }
+        };
+        handler.post(refresh);
+
         listView.setDivider(null);
-        final ArrayList<Integer> selectedItem = new ArrayList<>();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                if(selectedItem.isEmpty()){
-                    Intent intent = new Intent(getBaseContext(),ViewFile.class);
-                    intent.putExtra("position",position);
-                    startActivity(intent);
-                }
-                else{
-                    CheckBox checkBox = (CheckBox) view.findViewById(R.id.cbSelected);
-                    checkBox.setChecked(true);
-                    checkBox.setVisibility(View.VISIBLE);
-                    selectedItem.add(position);
-                    checkBox.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            CheckBox box = (CheckBox) v;
-                            if(!box.isChecked()){
-                                box.setChecked(false);
-                                box.setVisibility(View.GONE);
-                                selectedItem.remove((Object)position);
-                            }
-                        }
-                    });
-                }
+                Intent intent = new Intent(getBaseContext(),ViewFile.class);
+                intent.putExtra("position",position);
+                startActivity(intent);
             }
         });
-
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listView.setMultiChoiceModeListener(new ListView.MultiChoiceModeListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-                CheckBox checkBox = (CheckBox) view.findViewById(R.id.cbSelected);
-                checkBox.setChecked(true);
-                checkBox.setVisibility(View.VISIBLE);
-                selectedItem.add(position);
-                checkBox.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        CheckBox box = (CheckBox) v;
-                        if(!box.isChecked()){
-                            box.setChecked(false);
-                            box.setVisibility(View.GONE);
-                            selectedItem.remove((Object)position);
-                        }
-                    }
-                });
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                final int checkedCount = listView.getCheckedItemCount();
+                // Set the CAB title according to total checked items
+                mode.setTitle(checkedCount + " Selected");
+                // Calls toggleSelection method from ListViewAdapter Class
+                adapter.toggleSelection(position);
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                mode.getMenuInflater().inflate(R.menu.choice_layout, menu);
                 return true;
             }
-        });
 
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.delete:
+                        // Calls getSelectedIds method from ListViewAdapter Class
+                        SparseBooleanArray selected = adapter
+                                .getSelectedIds();
+                        // Captures all selected ids with a loop
+                        for (int i = (selected.size() - 1); i >= 0; i--) {
+                            if (selected.valueAt(i)) {
+                                MediaEntry selecteditem = adapter
+                                        .getItem(selected.keyAt(i));
+                                // Remove selected items following the ids
+                                AlbumTool.deleteById(getBaseContext(),selecteditem.getId());
+                                adapter.remove(selecteditem);
+                            }
+                        }
+                        // Close CAB
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                adapter.removeSelection();
+            }
+        });
     }
 
     @Override
@@ -98,4 +154,25 @@ public class HomeScreen extends AppCompatActivity {
         return false;
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case ALL_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+
+                } else {
+
+                    System.exit(1);
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+
+    }
 }

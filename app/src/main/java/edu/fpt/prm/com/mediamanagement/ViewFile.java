@@ -7,13 +7,15 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import android.widget.ImageView;
 import android.widget.VideoView;
 
 import java.util.ArrayList;
+
+import entry.MediaEntry;
+import tools.AlbumTool;
 
 public class ViewFile extends AppCompatActivity {
     ArrayList<MediaEntry> list;
@@ -22,7 +24,7 @@ public class ViewFile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_file);
-        list = ListAlbum.getAllListAlbum(this);
+        list = AlbumTool.getAllListAlbum(this);
         Intent intent = getIntent();
         position = intent.getIntExtra("position", -1);
         if(position == -1){
