@@ -1,6 +1,7 @@
 package edu.fpt.prm.com.mediamanagement;
 
 import android.content.Context;
+import android.content.Intent;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import entry.MediaEntry;
@@ -38,7 +40,7 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (mDataset.isEmpty()) return;
         MediaEntry entry = mDataset.get(position);
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
@@ -48,6 +50,14 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
 
         }
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context,ImageDetail.class);
+                intent.putExtra("entry", position);
+                context.startActivity(intent);
+            }
+        });
     }
 
 
