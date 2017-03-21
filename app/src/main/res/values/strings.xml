@@ -3,4 +3,12 @@
     <string name="title_activity_view_file">ViewFile</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="permission_camera_rationale">Camera permission is needed to show the camera preview.</string>
+    <string name="permission_read_external_rationale">Read external permission is needed to show the camera preview.</string>
+    <string name="button_allow">Allow</string>
+    <string name="button_deny">Deny</string>
+    <string name="permission_camera_denied">Camera permission was denied. Please consider granting it in order to access the camera!</string>
+    <string name="permission_read_external_denied">Read external permission was denied. Please consider granting it in order to access!</string>
+    <string name="permission_camera_never_ask_again">Camera permission was denied with never ask again.</string>
+    <string name="permission_read_external_ask_again">Read external permission was denied with never ask again.</string>
 </resources>

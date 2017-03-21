@@ -1,5 +1,6 @@
 package edu.fpt.prm.com.mediamanagement;
 
+import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -15,6 +16,9 @@ import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.MemoryCategory;
+import com.vistrav.ask.Ask;
+import com.vistrav.ask.annotations.AskDenied;
+import com.vistrav.ask.annotations.AskGranted;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,11 +27,10 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import entry.MediaEntry;
+import permissions.dispatcher.NeedsPermission;
 import tools.AlbumTool;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
-
 public class HomeActivity extends AppCompatActivity{
+    private static final String TAG = HomeActivity.class.getSimpleName();
 
     RecyclerView recyclerView;
     GridLayoutManager mLayoutManager;
@@ -39,11 +42,20 @@ public class HomeActivity extends AppCompatActivity{
     private Uri fileUri;
     FloatingActionButton fab,fab_Cam,fab_Video;
     boolean change = false;
-
+    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        //get permission
+        Ask.on(this)
+                .forPermissions(Manifest.permission.ACCESS_COARSE_LOCATION
+                        , Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withRationales("Location permission need for map to work properly",
+                        "In order to save file you will need to grant storage permission") //optional
+                .go();
+
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
         recyclerView = (RecyclerView) findViewById(R.id.listItem);
         mLayoutManager = new GridLayoutManager(this,3);
@@ -164,4 +176,40 @@ public class HomeActivity extends AppCompatActivity{
         fab_Cam.hide();
         fab_Video.hide();
     }
+    //optional
+    @AskGranted(Manifest.permission.READ_EXTERNAL_STORAGE)
+    public void fileReadGranted() {
+        Log.i(TAG, "READ  GRANTED");
+    }
+
+    //optional
+    @AskDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
+    public void fileReadDenied() {
+        Log.i(TAG, "READ  DENiED");
+    }
+    //optional
+    @AskGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void fileAccessGranted() {
+        Log.i(TAG, "FILE  GRANTED");
+    }
+
+    //optional
+    @AskDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void fileAccessDenied() {
+        Log.i(TAG, "FILE  DENiED");
+    }
+
+    //optional
+    @AskGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
+    public void mapAccessGranted() {
+        Log.i(TAG, "MAP GRANTED");
+    }
+
+    //optional
+    @AskDenied(Manifest.permission.ACCESS_COARSE_LOCATION)
+    public void mapAccessDenied() {
+        Log.i(TAG, "MAP DENIED");
+    }
+
+
 }

@@ -15,7 +15,7 @@ import entry.MediaEntry;
  */
 
 public class AlbumTool {
-
+    public static Cursor cursor;
     public static ArrayList<MediaEntry> getAllListAlbum(Context context){
         ArrayList<MediaEntry> list = new ArrayList<>();
         String[] projection = {
@@ -54,7 +54,7 @@ public class AlbumTool {
 //        );
 //
 //        Cursor cursor = cursorLoader.loadInBackground();
-        Cursor cursor = context.getContentResolver().query(queryUri,
+        cursor= context.getContentResolver().query(queryUri,
                 projection,
                 selection,
                 null, // Selection args (none).
