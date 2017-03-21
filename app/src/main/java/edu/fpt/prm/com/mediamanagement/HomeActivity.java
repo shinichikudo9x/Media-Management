@@ -51,7 +51,7 @@ public class HomeActivity extends AppCompatActivity{
         //get permission
         Ask.on(this)
                 .forPermissions(Manifest.permission.ACCESS_COARSE_LOCATION
-                        , Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        , Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withRationales("Location permission need for map to work properly",
                         "In order to save file you will need to grant storage permission") //optional
                 .go();
@@ -176,25 +176,15 @@ public class HomeActivity extends AppCompatActivity{
         fab_Cam.hide();
         fab_Video.hide();
     }
-    //optional
-    @AskGranted(Manifest.permission.READ_EXTERNAL_STORAGE)
-    public void fileReadGranted() {
-        Log.i(TAG, "READ  GRANTED");
-    }
 
     //optional
-    @AskDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
-    public void fileReadDenied() {
-        Log.i(TAG, "READ  DENiED");
-    }
-    //optional
-    @AskGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    @AskGranted(Manifest.permission.READ_EXTERNAL_STORAGE)
     public void fileAccessGranted() {
         Log.i(TAG, "FILE  GRANTED");
     }
 
     //optional
-    @AskDenied(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    @AskDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
     public void fileAccessDenied() {
         Log.i(TAG, "FILE  DENiED");
     }
