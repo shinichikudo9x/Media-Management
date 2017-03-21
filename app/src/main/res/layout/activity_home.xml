@@ -12,9 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/listItem"
-        android:scrollbars="vertical">
-
-    </android.support.v7.widget.RecyclerView>
+        android:scrollbars="vertical"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
