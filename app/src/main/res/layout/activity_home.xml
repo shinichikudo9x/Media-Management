@@ -21,7 +21,8 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="20dp"
         android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_plus" />
+        android:src="@android:drawable/ic_input_add"
+        />
 
     <include layout="@layout/fb_layout"/>
 

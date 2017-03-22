@@ -21,7 +21,7 @@ import entry.MediaEntry;
  */
 
 public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder> {
-    private ArrayList<MediaEntry> mDataset;
+    ArrayList<MediaEntry> mDataset;
     private Context context;
 
     public MyRecycleView(ArrayList<MediaEntry> mDataset, Context context) {
@@ -74,4 +74,5 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
             mView = v;
         }
     }
+
 }

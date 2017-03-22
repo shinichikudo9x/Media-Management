@@ -61,13 +61,12 @@ public class ImageDetail extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(intent.getIntExtra("entry",0));
+        mViewPager.setPageMargin(10);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_image_detail, menu);
         return true;
     }
 
@@ -79,15 +78,6 @@ public class ImageDetail extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        switch (id){
-            case R.id.delete:
-                break;
-            case R.id.sync:
-                break;
-            case R.id.detail:
-                break;
-
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -131,7 +121,6 @@ public class ImageDetail extends AppCompatActivity {
                 entry = list.get(args);
                 Glide.with(this).load("file://"+entry.getPath()).into(view);
             }
-
             return rootView;
         }
     }
