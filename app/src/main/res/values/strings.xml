@@ -11,4 +11,6 @@
     <string name="permission_read_external_denied">Read external permission was denied. Please consider granting it in order to access!</string>
     <string name="permission_camera_never_ask_again">Camera permission was denied with never ask again.</string>
     <string name="permission_read_external_ask_again">Read external permission was denied with never ask again.</string>
+    <string name="drawer_item_home">Home</string>
+    <string name="drawer_item_settings">Sync all picture to Drive</string>
 </resources>
