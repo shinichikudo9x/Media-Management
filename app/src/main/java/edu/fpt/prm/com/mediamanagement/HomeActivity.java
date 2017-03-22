@@ -1,23 +1,21 @@
 package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
-import android.graphics.Camera;
-import android.media.CameraProfile;
-import android.media.MediaScannerConnection;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
@@ -26,12 +24,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.VideoView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -57,7 +53,6 @@ import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -75,10 +70,6 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
-
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE;
-import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
-import static tools.AlbumTool.getAllListAlbum;
 
 @RuntimePermissions
 public class HomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -103,7 +94,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean fileOperation = false;
     private DriveId mFileId;
     public DriveFile file;
-    Animation fab_close,fab_open;
+    Animation fab_close, fab_open;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,7 +117,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         recyclerView.setHasFixedSize(true);
 
         ArrayList<MediaEntry> dataSet = AlbumTool.getAllListAlbum(this);
-        adapter = new MyRecycleView(dataSet,this);
+        adapter = new MyRecycleView(dataSet, this);
         recyclerView.setAdapter(adapter);
 
         //setup floating button
@@ -135,27 +126,26 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_Video = (FloatingActionButton) findViewById(R.id.fab_Video);
         fab_close = AnimationUtils.loadAnimation(this, R.anim.fab_close);
         fab_open = AnimationUtils.loadAnimation(this, R.anim.fab_open);
-        fab.setOnClickListener(new View.OnClickListener(){
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                if(change== false){
+            public void onClick(View view) {
+                if (change == false) {
                     fab_Video.show();
                     fab_Cam.show();
                     fab.setAnimation(fab_open);
-                    change=true;
-                }
-                else{
+                    change = true;
+                } else {
                     fab.setAnimation(fab_close);
                     hide();
-                    change=false;
+                    change = false;
                 }
             }
         });
 
         //Open Cam by using floating_button
-        fab_Cam.setOnClickListener(new View.OnClickListener(){
+        fab_Cam.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
 //                Intent open = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 //                if(open.resolveActivity(getPackageManager())!=null){
 //                    startActivityForResult(open,REQUEST_IMAGE_CAPTURE);
@@ -169,9 +159,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         //Open video_record
-        fab_Video.setOnClickListener(new View.OnClickListener(){
+        fab_Video.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
 //                Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
 //                fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
 //                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -199,9 +189,10 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final int MEDIA_TYPE_VIDEO = 2;
 
     //luu anh
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
 //            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
 //            try {
 //                FileOutputStream fos = new FileOutputStream(pictureFile);
@@ -215,27 +206,28 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             adapter.notifyDataSetChanged();
 
 
-        //hoanglg
-        switch (requestCode) {
-            case REQUEST_CODE_CREATOR:
-                if (requestCode == RESULT_OK) {
-                    Log.i(TAG, "Image successfully saved.");
-                }
-                break;
-            case REQUEST_CODE_OPENER:
-                if (resultCode == RESULT_OK) {
-                    mFileId = (DriveId) data.getParcelableExtra(
-                            OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-                    Log.e("file id", mFileId.getResourceId() + "");
-                    String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+            //hoanglg
+            switch (requestCode) {
+                case REQUEST_CODE_CREATOR:
+                    if (requestCode == RESULT_OK) {
+                        Log.i(TAG, "Image successfully saved.");
+                    }
+                    break;
+                case REQUEST_CODE_OPENER:
+                    if (resultCode == RESULT_OK) {
+                        mFileId = (DriveId) data.getParcelableExtra(
+                                OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+                        Log.e("file id", mFileId.getResourceId() + "");
+                        String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(Uri.parse(url));
+                        startActivity(i);
+                    }
+                    break;
+                default:
+                    super.onActivityResult(requestCode, resultCode, data);
+                    break;
+            }
         }
     }
 
@@ -260,12 +252,12 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
+        if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
+                    "IMG_" + timeStamp + ".jpg");
+        } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
+                    "VID_" + timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -276,14 +268,15 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     //-----------------------
-    public void hide(){
+    public void hide() {
         fab_Cam.hide();
         fab_Video.hide();
     }
-    private void takePhoto(String description){
+
+    private void takePhoto(String description) {
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy-hhmmss");
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "IMG-"+format.format(new Date()));
+        values.put(MediaStore.Images.Media.TITLE, "IMG-" + format.format(new Date()));
         values.put(MediaStore.Images.Media.DESCRIPTION, description);
         Uri imageUri = getContentResolver().insert(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -445,6 +438,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         mGoogleApiClient.connect();
     }
+
     //demo create a text file
     public void createFileOnDrive() {
         connectApi();
@@ -516,6 +510,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         mBitmapToSave = BitmapFactory.decodeFile(list.get(0).getPath());
         saveFileToDrive();
     }
+
     //demo create 1 file text type.
     public void onClickCreateFile(View view) {
         fileOperation = true;
