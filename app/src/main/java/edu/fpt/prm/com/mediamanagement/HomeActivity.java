@@ -1,24 +1,26 @@
 package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.MemoryCategory;
-import com.vistrav.ask.Ask;
-import com.vistrav.ask.annotations.AskDenied;
-import com.vistrav.ask.annotations.AskGranted;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -28,8 +30,15 @@ import java.util.Date;
 
 import entry.MediaEntry;
 import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
-public class HomeActivity extends AppCompatActivity{
+
+@RuntimePermissions
+public class HomeActivity extends AppCompatActivity {
     private static final String TAG = HomeActivity.class.getSimpleName();
 
     RecyclerView recyclerView;
@@ -40,29 +49,24 @@ public class HomeActivity extends AppCompatActivity{
     static final int REQUEST_VIDEO_CAPTURE = 2;
 
     private Uri fileUri;
-    FloatingActionButton fab,fab_Cam,fab_Video;
+    FloatingActionButton fab, fab_Cam, fab_Video;
     boolean change = false;
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        //get permission
-        Ask.on(this)
-                .forPermissions(Manifest.permission.ACCESS_COARSE_LOCATION
-                        , Manifest.permission.READ_EXTERNAL_STORAGE)
-                .withRationales("Location permission need for map to work properly",
-                        "In order to save file you will need to grant storage permission") //optional
-                .go();
+        //get read permission
+        HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
 
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
         recyclerView = (RecyclerView) findViewById(R.id.listItem);
-        mLayoutManager = new GridLayoutManager(this,3);
+        mLayoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(true);
         ArrayList<MediaEntry> dataSet = AlbumTool.getAllListAlbum(this);
-        MyRecycleView adapter = new MyRecycleView(dataSet,this);
+        MyRecycleView adapter = new MyRecycleView(dataSet, this);
         recyclerView.setAdapter(adapter);
 
         //setup floating button
@@ -70,27 +74,27 @@ public class HomeActivity extends AppCompatActivity{
         fab_Cam = (FloatingActionButton) findViewById(R.id.fab_Cam);
         fab_Video = (FloatingActionButton) findViewById(R.id.fab_Video);
 
-        fab.setOnClickListener(new View.OnClickListener(){
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                if(change== false){
+            public void onClick(View view) {
+                if (change == false) {
                     fab_Video.show();
                     fab_Cam.show();
-                    change=true;}
-                else{
+                    change = true;
+                } else {
                     hide();
-                    change=false;
+                    change = false;
                 }
             }
         });
 
         //Open Cam by using floating_button
-        fab_Cam.setOnClickListener(new View.OnClickListener(){
+        fab_Cam.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 Intent open = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if(open.resolveActivity(getPackageManager())!=null){
-                    startActivityForResult(open,REQUEST_IMAGE_CAPTURE);
+                if (open.resolveActivity(getPackageManager()) != null) {
+                    startActivityForResult(open, REQUEST_IMAGE_CAPTURE);
                     //hide floating_button
                     hide();
                 }
@@ -98,9 +102,9 @@ public class HomeActivity extends AppCompatActivity{
         });
 
         //Open video_record
-        fab_Video.setOnClickListener(new View.OnClickListener(){
+        fab_Video.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
                 takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
@@ -124,8 +128,8 @@ public class HomeActivity extends AppCompatActivity{
 
     //luu anh
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             try {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
@@ -134,12 +138,14 @@ public class HomeActivity extends AppCompatActivity{
                 fos.flush();
                 fos.close();
 
-            }catch (Exception ex){}
+            } catch (Exception ex) {
+            }
         }
     }
-
-    private static Uri getOutputMediaFileUri(int type){
-
+    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+    void getReadPermission(){
+    }
+    private static Uri getOutputMediaFileUri(int type) {
         return Uri.fromFile(getOutputMediaFile(type));
     }
 
@@ -156,12 +162,12 @@ public class HomeActivity extends AppCompatActivity{
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
+        if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
+                    "IMG_" + timeStamp + ".jpg");
+        } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_"+ timeStamp + ".mp4");
+                    "VID_" + timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -172,34 +178,48 @@ public class HomeActivity extends AppCompatActivity{
 
 
     //-----------------------
-    public void hide(){
+    public void hide() {
         fab_Cam.hide();
         fab_Video.hide();
     }
 
-    //optional
-    @AskGranted(Manifest.permission.READ_EXTERNAL_STORAGE)
-    public void fileAccessGranted() {
-        Log.i(TAG, "FILE  GRANTED");
+    @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+    void systemAlertWindowOnShowRationale(PermissionRequest request) {
+        showRationaleDialog(R.string.permission_read_external_rationale, request);
     }
 
-    //optional
-    @AskDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
-    public void fileAccessDenied() {
-        Log.i(TAG, "FILE  DENiED");
+    @OnPermissionDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
+    void systemAlertWindowOnPermissionDenied() {
+        Toast.makeText(this, R.string.permission_read_external_denied, Toast.LENGTH_SHORT).show();
     }
 
-    //optional
-    @AskGranted(Manifest.permission.ACCESS_COARSE_LOCATION)
-    public void mapAccessGranted() {
-        Log.i(TAG, "MAP GRANTED");
+    @OnNeverAskAgain(Manifest.permission.READ_EXTERNAL_STORAGE)
+    void systemAlertWindowOnNeverAskAgain() {
+        Toast.makeText(this, R.string.permission_read_external_ask_again, Toast.LENGTH_SHORT).show();
     }
 
-    //optional
-    @AskDenied(Manifest.permission.ACCESS_COARSE_LOCATION)
-    public void mapAccessDenied() {
-        Log.i(TAG, "MAP DENIED");
+    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setPositiveButton(R.string.button_allow, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.cancel();
+                    }
+                })
+                .setCancelable(false)
+                .setMessage(messageResId)
+                .show();
     }
 
-
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        HomeActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
 }
