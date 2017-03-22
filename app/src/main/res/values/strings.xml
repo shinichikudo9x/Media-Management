@@ -14,4 +14,5 @@
     <string name="drawer_item_home">Home</string>
     <string name="drawer_item_settings">Sync all picture to Drive</string>
     <string name="drawer_item_upload_all">Upload all picture to Google Drive</string>
+    <string name="title_activity_image_detail">ImageDetail</string>
 </resources>

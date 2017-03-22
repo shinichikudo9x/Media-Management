@@ -2,15 +2,20 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
+import android.graphics.Camera;
+import android.media.CameraProfile;
+import android.media.MediaScannerConnection;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
@@ -21,7 +26,12 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.VideoView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -66,6 +76,8 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
 
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE;
+import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 import static tools.AlbumTool.getAllListAlbum;
 
 @RuntimePermissions
@@ -74,6 +86,8 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     RecyclerView recyclerView;
     GridLayoutManager mLayoutManager;
     Toolbar mToolbar;
+    MyRecycleView adapter;
+
     //Capture
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
@@ -89,6 +103,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     private boolean fileOperation = false;
     private DriveId mFileId;
     public DriveFile file;
+    Animation fab_close,fab_open;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,59 +118,74 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
         createFileOnDrive();
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
         recyclerView = (RecyclerView) findViewById(R.id.listItem);
         mLayoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(true);
-        ArrayList<MediaEntry> dataSet = getAllListAlbum(this);
-        MyRecycleView adapter = new MyRecycleView(dataSet, this);
+
+        ArrayList<MediaEntry> dataSet = AlbumTool.getAllListAlbum(this);
+        adapter = new MyRecycleView(dataSet,this);
         recyclerView.setAdapter(adapter);
 
         //setup floating button
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab_Cam = (FloatingActionButton) findViewById(R.id.fab_Cam);
         fab_Video = (FloatingActionButton) findViewById(R.id.fab_Video);
-
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab_close = AnimationUtils.loadAnimation(this, R.anim.fab_close);
+        fab_open = AnimationUtils.loadAnimation(this, R.anim.fab_open);
+        fab.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view) {
-                if (change == false) {
+            public void onClick(View view){
+                if(change== false){
                     fab_Video.show();
                     fab_Cam.show();
-                    change = true;
-                } else {
+                    fab.setAnimation(fab_open);
+                    change=true;
+                }
+                else{
+                    fab.setAnimation(fab_close);
                     hide();
-                    change = false;
+                    change=false;
                 }
             }
         });
 
         //Open Cam by using floating_button
-        fab_Cam.setOnClickListener(new View.OnClickListener() {
+        fab_Cam.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-                Intent open = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (open.resolveActivity(getPackageManager()) != null) {
-                    startActivityForResult(open, REQUEST_IMAGE_CAPTURE);
-                    //hide floating_button
-                    hide();
-                }
+            public void onClick(View v){
+//                Intent open = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                if(open.resolveActivity(getPackageManager())!=null){
+//                    startActivityForResult(open,REQUEST_IMAGE_CAPTURE);
+//                    //hide floating_button
+//                    hide();
+//                }
+                takePhoto("");
+                hide();
+                fab.setAnimation(fab_close);
             }
         });
 
         //Open video_record
-        fab_Video.setOnClickListener(new View.OnClickListener() {
+        fab_Video.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View view) {
+            public void onClick(View view){
+//                Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+//                fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
+//                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
+//                takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+//                if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
+//                    startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
+//                    hide();
+//                }
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-                takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
                 if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
-                    hide();
                 }
+                hide();
+                fab.setAnimation(fab_close);
             }
         });
     }
@@ -170,18 +200,21 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     //luu anh
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                Bitmap bit = (Bitmap) data.getExtras().get("data");
-                bit.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                fos.flush();
-                fos.close();
-            } catch (Exception ex) {
-            }
-        }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+//            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+//            try {
+//                FileOutputStream fos = new FileOutputStream(pictureFile);
+//                Bitmap bit = (Bitmap) data.getExtras().get("data");
+//                bit.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+//                fos.flush();
+//                fos.close();
+//
+//            }catch (Exception ex){}
+            adapter.mDataset = AlbumTool.getAllListAlbum(getBaseContext());
+            adapter.notifyDataSetChanged();
+
+
         //hoanglg
         switch (requestCode) {
             case REQUEST_CODE_CREATOR:
@@ -227,12 +260,12 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
         File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE) {
+        if (type == MEDIA_TYPE_IMAGE){
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_" + timeStamp + ".jpg");
-        } else if (type == MEDIA_TYPE_VIDEO) {
+                    "IMG_"+ timeStamp + ".jpg");
+        } else if(type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_" + timeStamp + ".mp4");
+                    "VID_"+ timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -243,9 +276,20 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     //-----------------------
-    public void hide() {
+    public void hide(){
         fab_Cam.hide();
         fab_Video.hide();
+    }
+    private void takePhoto(String description){
+        SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy-hhmmss");
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "IMG-"+format.format(new Date()));
+        values.put(MediaStore.Images.Media.DESCRIPTION, description);
+        Uri imageUri = getContentResolver().insert(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        startActivityForResult(intent, 1);
     }
 
     @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
