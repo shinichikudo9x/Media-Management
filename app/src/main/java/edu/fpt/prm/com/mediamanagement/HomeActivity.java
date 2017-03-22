@@ -4,7 +4,9 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -43,6 +45,7 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -54,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import entry.MediaEntry;
+import es.dmoral.toasty.Toasty;
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnNeverAskAgain;
 import permissions.dispatcher.OnPermissionDenied;
@@ -62,22 +66,23 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
 
+import static tools.AlbumTool.getAllListAlbum;
+
 @RuntimePermissions
 public class HomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = HomeActivity.class.getSimpleName();
-
     RecyclerView recyclerView;
     GridLayoutManager mLayoutManager;
     Toolbar mToolbar;
     //Capture
     static final int REQUEST_IMAGE_CAPTURE = 1;
     static final int REQUEST_VIDEO_CAPTURE = 2;
-
+    private static final int REQUEST_CODE_CREATOR = 3;
+    private Bitmap mBitmapToSave;
     private Uri fileUri;
     FloatingActionButton fab, fab_Cam, fab_Video;
     boolean change = false;
     //driver api
-
     private static final int REQUEST_CODE_RESOLUTION = 1;
     private static final int REQUEST_CODE_OPENER = 2;
     private GoogleApiClient mGoogleApiClient;
@@ -95,14 +100,15 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         //Navigation Drawer
         addNavigationDrawer();
-        connectApi();
+
         createFileOnDrive();
+
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
         recyclerView = (RecyclerView) findViewById(R.id.listItem);
         mLayoutManager = new GridLayoutManager(this, 3);
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(true);
-        ArrayList<MediaEntry> dataSet = AlbumTool.getAllListAlbum(this);
+        ArrayList<MediaEntry> dataSet = getAllListAlbum(this);
         MyRecycleView adapter = new MyRecycleView(dataSet, this);
         recyclerView.setAdapter(adapter);
 
@@ -150,7 +156,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                     startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
                     hide();
                 }
-
             }
         });
     }
@@ -179,12 +184,17 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         //hoanglg
         switch (requestCode) {
+            case REQUEST_CODE_CREATOR:
+                if (requestCode == RESULT_OK) {
+                    Log.i(TAG, "Image successfully saved.");
+                }
+                break;
             case REQUEST_CODE_OPENER:
                 if (resultCode == RESULT_OK) {
                     mFileId = (DriveId) data.getParcelableExtra(
                             OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
                     Log.e("file id", mFileId.getResourceId() + "");
-                    String url = "https://drive.google.com/open?id="+ mFileId.getResourceId();
+                    String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
                     Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(url));
                     startActivity(i);
@@ -245,12 +255,12 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @OnPermissionDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
     void systemAlertWindowOnPermissionDenied() {
-        Toast.makeText(this, R.string.permission_read_external_denied, Toast.LENGTH_SHORT).show();
+        Toasty.error(this, getString(R.string.permission_read_external_denied), Toast.LENGTH_SHORT).show();
     }
 
     @OnNeverAskAgain(Manifest.permission.READ_EXTERNAL_STORAGE)
     void systemAlertWindowOnNeverAskAgain() {
-        Toast.makeText(this, R.string.permission_read_external_ask_again, Toast.LENGTH_SHORT).show();
+        Toasty.error(getApplicationContext(), getString(R.string.permission_read_external_ask_again), Toast.LENGTH_SHORT).show();
     }
 
     private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
@@ -281,7 +291,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void addNavigationDrawer() {
         //if you want to update the items at a later time it is recommended to keep it in a variable
         PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName(R.string.drawer_item_home);
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.drawer_item_settings);
+        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.drawer_item_upload_all);
 
 //create the drawer and remember the `Drawer` result object
         Drawer result = new DrawerBuilder()
@@ -296,11 +306,15 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
                         // do something with the clicked item :D
+                        long identifier = drawerItem.getIdentifier();
+                        if (identifier == 2) {
+                            Log.d(TAG, "222222");
+                            uploadOnePhototoGDrive();
+                        }
                         return false;
                     }
                 })
                 .build();
-
     }
 
     @Override
@@ -337,7 +351,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        Toast.makeText(getApplicationContext(), "Connected", Toast.LENGTH_LONG).show();
+        Toasty.info(getApplicationContext(), "Connected to Google Drive account!", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -351,7 +365,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i(TAG, "GoogleApiClient connection failed: " + connectionResult.toString());
 
         if (!connectionResult.hasResolution()) {
-
             // show the localized error dialog.
             GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(), 0).show();
             return;
@@ -372,15 +385,13 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    public void connectApi(){
+    public void connectApi() {
         if (mGoogleApiClient == null) {
-
             /**
              * Create the API client and bind it to an instance variable.
              * We use this instance as the callback for connection and connection failures.
              * Since no account name is passed, the user is prompted to choose.
              */
-            Log.i(TAG, "google client is null");
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(Drive.API)
                     .addScope(Drive.SCOPE_FILE)
@@ -388,24 +399,85 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addOnConnectionFailedListener(this)
                     .build();
         }
-
         mGoogleApiClient.connect();
     }
-
-    public void createFileOnDrive(){
+    //demo create a text file
+    public void createFileOnDrive() {
+        connectApi();
         fileOperation = true;
         // create new contents resource
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
     }
 
+    /**
+     * Create a new file and save it to Drive.
+     */
+    private void saveFileToDrive() {
+        // Start by creating a new contents, and setting a callback.
+        Log.i(TAG, "Creating new contents.");
+        final Bitmap image = mBitmapToSave;
+        new Thread() {
+            @Override
+            public void run() {
+                Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                        .setResultCallback(new ResultCallback<DriveContentsResult>() {
+                            @Override
+                            public void onResult(DriveContentsResult result) {
+                                // If the operation was not successful, we cannot do anything
+                                // and must
+                                // fail.
+                                if (!result.getStatus().isSuccess()) {
+                                    Log.i(TAG, "Failed to create new contents.");
+                                    return;
+                                }
+                                // Otherwise, we can write our data to the new contents.
+                                Log.i(TAG, "New contents created.");
+                                // Get an output stream for the contents.
+                                OutputStream outputStream = result.getDriveContents().getOutputStream();
+                                // Write the bitmap data from it.
+                                ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
+                                image.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+                                try {
+                                    outputStream.write(bitmapStream.toByteArray());
+                                } catch (IOException e1) {
+                                    Log.i(TAG, "Unable to write file contents.");
+                                }
+                                // Create the initial metadata - MIME type and title.
+                                // Note that the user will be able to change the title later.
+                                MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
+                                        .setMimeType("image/jpeg").setTitle("Android Photo.png").build();
+                                // Create an intent for the file chooser, and start it.
+                                IntentSender intentSender = Drive.DriveApi
+                                        .newCreateFileActivityBuilder()
+                                        .setInitialMetadata(metadataChangeSet)
+                                        .setInitialDriveContents(result.getDriveContents())
+                                        .build(mGoogleApiClient);
+                                try {
+                                    startIntentSenderForResult(
+                                            intentSender, REQUEST_CODE_CREATOR, null, 0, 0, 0);
+                                } catch (SendIntentException e) {
+                                    Log.i(TAG, "Failed to launch file chooser.");
+                                }
+                            }
+                        });
+            }
+        }.start();
+    }
+
+    public void uploadOnePhototoGDrive() {
+        connectApi();
+        //save bitmap with each image
+        ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(this);
+        mBitmapToSave = BitmapFactory.decodeFile(list.get(0).getPath());
+        saveFileToDrive();
+    }
+    //demo create 1 file text type.
     public void onClickCreateFile(View view) {
         fileOperation = true;
-
         // create new contents resource
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
-
     }
 
     public void onClickOpenFile(View view) {
@@ -427,12 +499,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build(mGoogleApiClient);
         try {
             startIntentSenderForResult(intentSender, REQUEST_CODE_OPENER, null, 0, 0, 0);
-
         } catch (IntentSender.SendIntentException e) {
-
             Log.w(TAG, "Unable to send intent", e);
         }
-
     }
 
 
@@ -500,19 +569,11 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                 @Override
                 public void onResult(DriveFolder.DriveFileResult result) {
                     if (result.getStatus().isSuccess()) {
-                        Toast.makeText(getApplicationContext(), "file created: " + "" +
+                        Toasty.success(getApplicationContext(), "file created: " + "" +
                                 result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
                     }
                     return;
                 }
             };
-
-    /**
-     * Handle Response of selected file
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
 
 }
