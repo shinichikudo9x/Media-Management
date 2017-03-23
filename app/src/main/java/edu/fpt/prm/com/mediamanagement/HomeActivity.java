@@ -57,7 +57,6 @@ import java.util.HashMap;
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
 import tools.AlbumTool;
-import tools.Tool;
 
 import static tools.AlbumTool.getAllListAlbum;
 
@@ -319,7 +318,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-
             if (mGoogleApiClient == null) {
                 /**
                  * Create the API client and bind it to an instance variable.
@@ -335,7 +333,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                         .build();
             }
             mGoogleApiClient.connect();
-
     }
 
     @Override
