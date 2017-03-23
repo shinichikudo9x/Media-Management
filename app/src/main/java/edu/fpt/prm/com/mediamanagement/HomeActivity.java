@@ -73,6 +73,8 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
 
+import static tools.AlbumTool.getAllListAlbum;
+
 @RuntimePermissions
 public class HomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = HomeActivity.class.getSimpleName();
@@ -120,7 +122,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setHasFixedSize(true);
 
-        ArrayList<MediaEntry> dataSet = AlbumTool.getAllListAlbum(this);
+        ArrayList<MediaEntry> dataSet = getAllListAlbum(this);
         adapter = new MyRecycleView(dataSet, this);
         recyclerView.setAdapter(adapter);
 
@@ -186,6 +188,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onRestart() {
+        adapter.mDataset.clear();
+        adapter.mDataset.addAll(AlbumTool.getAllListAlbum(this));
+        adapter.notifyDataSetChanged();
         super.onRestart();
     }
 
@@ -206,7 +211,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 //                fos.close();
 //
 //            }catch (Exception ex){}
-            adapter.mDataset = AlbumTool.getAllListAlbum(getBaseContext());
+            adapter.mDataset = getAllListAlbum(getBaseContext());
             adapter.notifyDataSetChanged();
 
 
@@ -404,7 +409,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // Called whenever the API client fails to connect.
         Log.i(TAG, "GoogleApiClient connection failed: " + connectionResult.toString());
-        Toasty.error(getApplicationContext(),"Please check internet",Toast.LENGTH_SHORT).show();
+        Toasty.error(getApplicationContext(), "Please check internet", Toast.LENGTH_SHORT).show();
         if (!connectionResult.hasResolution()) {
             // show the localized error dialog.
             GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(), 0).show();
@@ -510,7 +515,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void uploadOnePhototoGDrive() {
         connectApi();
         //save bitmap with each image
-        ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(this);
+        ArrayList<MediaEntry> list = getAllListAlbum(this);
         mBitmapToSave = BitmapFactory.decodeFile(list.get(0).getPath());
         saveFileToDrive();
     }
@@ -634,4 +639,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 }

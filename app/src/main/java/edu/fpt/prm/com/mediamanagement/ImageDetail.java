@@ -1,6 +1,7 @@
 package edu.fpt.prm.com.mediamanagement;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
@@ -10,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -102,6 +104,24 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
             saveFileToDrive();
         } else if (id == R.id.action_delete) {
             //delete image
+            new AlertDialog.Builder(this)
+                    .setTitle("Delete Confirmation")
+                    .setMessage("Do you really want to delete?")
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            int id = AlbumTool.deleteById(getApplicationContext(), mMediaEntry.getId());
+                            if (id != -1) {
+                                Toasty.success(getApplicationContext(), "Deleted", Toast.LENGTH_LONG).show();
+                                onBackPressed();
+                            } else {
+                                Toasty.error(getApplicationContext(), "Can't delete", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null).show();
+
         }
         return super.onOptionsItemSelected(item);
     }
@@ -225,7 +245,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         // Perform I/O off the UI thread.
 
-                // write content to DriveContents
+        // write content to DriveContents
 //                OutputStream outputStream = driveContents.getOutputStream();
 //                Writer writer = new OutputStreamWriter(outputStream);
 //                try {
@@ -234,27 +254,27 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                } catch (IOException e) {
 //                    Log.e(TAG, e.getMessage());
 //                }
-                OutputStream outputStream = driveContents.getOutputStream();
-                // Write the bitmap data from it.
-                ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
-                mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
-                try {
-                    outputStream.write(bitmapStream.toByteArray());
-                } catch (IOException e1) {
-                    Log.i(TAG, "Unable to write file contents.");
-                }
+        OutputStream outputStream = driveContents.getOutputStream();
+        // Write the bitmap data from it.
+        ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
+        mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+        try {
+            outputStream.write(bitmapStream.toByteArray());
+        } catch (IOException e1) {
+            Log.i(TAG, "Unable to write file contents.");
+        }
 
 //                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
 //                        .setTitle("abhaytest2")
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
 
-                // create a file in root folder
-                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                        .createFile(mGoogleApiClient, changeSet, driveContents)
-                        .setResultCallback(fileCallback);
+        // create a file in root folder
+        Drive.DriveApi.getRootFolder(mGoogleApiClient)
+                .createFile(mGoogleApiClient, changeSet, driveContents)
+                .setResultCallback(fileCallback);
 
     }
 
@@ -346,6 +366,11 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
     @Override
     public void onConnectionSuspended(int cause) {
         Log.i(TAG, "GoogleApiClient connection suspended");
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
 
