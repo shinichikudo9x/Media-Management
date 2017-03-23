@@ -21,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -46,6 +45,7 @@ import java.util.ArrayList;
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
 import tools.AlbumTool;
+import tools.Tool;
 
 public class ImageDetail extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -228,8 +228,11 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            mMediaEntry = items.get(position);
-            return super.instantiateItem(container, position);
+            if(position>0)
+                mMediaEntry = items.get(position-1);
+            else
+                mMediaEntry = items.get(position);
+            return super.instantiateItem(container,position);
         }
 
     }
@@ -311,20 +314,22 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
     @Override
     protected void onResume() {
         super.onResume();
-        if (mGoogleApiClient == null) {
-            // Create the API client and bind it to an instance variable.
-            // We use this instance as the callback for connection and connection
-            // failures.
-            // Since no account name is passed, the user is prompted to choose.
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
+        if(Tool.isInternetAvailable(this)){
+            if (mGoogleApiClient == null) {
+                // Create the API client and bind it to an instance variable.
+                // We use this instance as the callback for connection and connection
+                // failures.
+                // Since no account name is passed, the user is prompted to choose.
+                mGoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addApi(Drive.API)
+                        .addScope(Drive.SCOPE_FILE)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build();
+            }
+            // Connect the client. Once connected, the camera is launched.
+            mGoogleApiClient.connect();
         }
-        // Connect the client. Once connected, the camera is launched.
-        mGoogleApiClient.connect();
     }
 
     @Override

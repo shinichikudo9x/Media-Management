@@ -2,11 +2,13 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -53,6 +55,7 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,6 +69,7 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
+import tools.Tool;
 
 import static tools.AlbumTool.getAllListAlbum;
 
@@ -103,7 +107,8 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         //Navigation Drawer
-        addNavigationDrawer();
+        if(Tool.isInternetAvailable(this))
+            addNavigationDrawer();
 
 //        createFileOnDrive();
 
@@ -355,22 +360,23 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-        if (mGoogleApiClient == null) {
-            /**
-             * Create the API client and bind it to an instance variable.
-             * We use this instance as the callback for connection and connection failures.
-             * Since no account name is passed, the user is prompted to choose.
-             */
-            Log.i(TAG, "google client is null");
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
+        if(Tool.isInternetAvailable(this)){
+            if (mGoogleApiClient == null) {
+                /**
+                 * Create the API client and bind it to an instance variable.
+                 * We use this instance as the callback for connection and connection failures.
+                 * Since no account name is passed, the user is prompted to choose.
+                 */
+                Log.i(TAG, "google client is null");
+                mGoogleApiClient = new GoogleApiClient.Builder(this)
+                        .addApi(Drive.API)
+                        .addScope(Drive.SCOPE_FILE)
+                        .addConnectionCallbacks(this)
+                        .addOnConnectionFailedListener(this)
+                        .build();
+            }
+            mGoogleApiClient.connect();
         }
-
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -514,6 +520,4 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             Log.w(TAG, "Unable to send intent", e);
         }
     }
-
-
 }
