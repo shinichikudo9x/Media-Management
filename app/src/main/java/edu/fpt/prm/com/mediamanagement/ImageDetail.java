@@ -6,7 +6,6 @@ import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -39,6 +38,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 
 import entry.MediaEntry;
+import es.dmoral.toasty.Toasty;
 import tools.AlbumTool;
 
 public class ImageDetail extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
@@ -249,7 +249,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
                 MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setMimeType("image/jpeg").setTitle("Android Photo.png").build();
+                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
 
                 // create a file in root folder
                 Drive.DriveApi.getRootFolder(mGoogleApiClient)
@@ -263,7 +263,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 @Override
                 public void onResult(DriveFolder.DriveFileResult result) {
                     if (result.getStatus().isSuccess()) {
-                        Toast.makeText(getApplicationContext(), "file created: " + "" +
+                        Toasty.success(getApplicationContext(), "Upload to Google Drive success: " + "" +
                                 result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
                     }
                     return;
@@ -305,19 +305,10 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 // Called after a photo has been taken.
                 if (resultCode == Activity.RESULT_OK) {
                     // Store the image data as a bitmap for writing later.
-                    mBitmapToSave = (Bitmap) data.getExtras().get("data");
+
                 }
                 break;
-            case REQUEST_CODE_CREATOR:
-                // Called after a file is saved to Drive.
-                if (resultCode == RESULT_OK) {
-                    Log.i(TAG, "Image successfully saved.");
-                    mBitmapToSave = null;
-                    // Just start the camera again for another photo.
-                    startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
-                            REQUEST_CODE_CAPTURE_IMAGE);
-                }
-                break;
+
         }
     }
 
