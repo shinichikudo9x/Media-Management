@@ -21,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -163,7 +162,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
             final VideoView videoView = (VideoView) rootView.findViewById(R.id.video_view);
-            ImageView btnPlay = (ImageView) rootView.findViewById(R.id.btnPlay);
             PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
