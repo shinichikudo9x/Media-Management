@@ -24,6 +24,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -104,10 +105,12 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         //get read permission
         HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
         //Navigation Drawer
         addNavigationDrawer();
 
-        createFileOnDrive();
+//        createFileOnDrive();
+
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
@@ -346,7 +349,8 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                         long identifier = drawerItem.getIdentifier();
                         if (identifier == 2) {
                             Log.d(TAG, "222222");
-                            uploadOnePhototoGDrive();
+//                            uploadOnePhototoGDrive();
+                            connectApi();
                         }
                         return false;
                     }
@@ -357,23 +361,22 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-        if (mGoogleApiClient == null) {
-
-            /**
-             * Create the API client and bind it to an instance variable.
-             * We use this instance as the callback for connection and connection failures.
-             * Since no account name is passed, the user is prompted to choose.
-             */
-            Log.i(TAG, "google client is null");
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-
-        mGoogleApiClient.connect();
+//        if (mGoogleApiClient == null) {
+//            /**
+//             * Create the API client and bind it to an instance variable.
+//             * We use this instance as the callback for connection and connection failures.
+//             * Since no account name is passed, the user is prompted to choose.
+//             */
+//            Log.i(TAG, "google client is null");
+//            mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                    .addApi(Drive.API)
+//                    .addScope(Drive.SCOPE_FILE)
+//                    .addConnectionCallbacks(this)
+//                    .addOnConnectionFailedListener(this)
+//                    .build();
+//        }
+//
+//        mGoogleApiClient.connect();
     }
 
     @Override
@@ -531,7 +534,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
      * Open list of folder and file of the Google Drive
      */
     public void OpenFileFromGoogleDrive() {
-
         IntentSender intentSender = Drive.DriveApi
                 .newOpenFileActivityBuilder()
                 .setMimeType(new String[]{"text/plain", "text/html"})
@@ -615,4 +617,10 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                 }
             };
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
 }

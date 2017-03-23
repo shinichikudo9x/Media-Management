@@ -13,6 +13,6 @@
     <string name="permission_read_external_ask_again">Read external permission was denied with never ask again.</string>
     <string name="drawer_item_home">Home</string>
     <string name="drawer_item_settings">Sync all picture to Drive</string>
-    <string name="drawer_item_upload_all">Upload all picture to Google Drive</string>
+    <string name="drawer_item_upload_all">Login google Account</string>
     <string name="title_activity_image_detail">ImageDetail</string>
 </resources>
