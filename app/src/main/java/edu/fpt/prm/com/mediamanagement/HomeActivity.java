@@ -24,6 +24,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -445,7 +446,16 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                Toasty.success(getApplicationContext(),query,Toast.LENGTH_LONG).show();
+                if (!TextUtils.isEmpty(query)) {
+                    ArrayList<MediaEntry> list = AlbumTool.searchByDescription(getApplicationContext(), query);
+                    if (list != null && !list.isEmpty()) {
+                        adapter.mDataset.clear();
+                        adapter.mDataset.addAll(list);
+                        Toasty.success(getApplicationContext(), query, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toasty.error(getApplicationContext(), "Can't find any matched", Toast.LENGTH_LONG).show();
+                    }
+                }
                 return false;
             }
 
