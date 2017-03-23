@@ -1,34 +1,47 @@
 package edu.fpt.prm.com.mediamanagement;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
+import android.content.IntentSender;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi.DriveContentsResult;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.MetadataChangeSet;
 
-import java.io.Serializable;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import entry.MediaEntry;
 import tools.AlbumTool;
 
-public class ImageDetail extends AppCompatActivity {
+public class ImageDetail extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -45,6 +58,16 @@ public class ImageDetail extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    //api
+    private static final String TAG = "UPLOAD PHOTO";
+    private static final int REQUEST_CODE_CAPTURE_IMAGE = 1;
+    private static final int REQUEST_CODE_CREATOR = 2;
+    private static final int REQUEST_CODE_RESOLUTION = 3;
+
+    private GoogleApiClient mGoogleApiClient;
+    private Bitmap mBitmapToSave;
+    static MediaEntry mMediaEntry;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,25 +83,26 @@ public class ImageDetail extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setCurrentItem(intent.getIntExtra("entry",0));
+        mViewPager.setCurrentItem(intent.getIntExtra("entry", 0));
         mViewPager.setPageMargin(10);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_imagedetail, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
+        if (id == R.id.action_upload) {
+            mBitmapToSave = BitmapFactory.decodeFile(mMediaEntry.getPath());
+            saveFileToDrive();
+        } else if (id == R.id.action_delete) {
+            //delete image
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -93,6 +117,7 @@ public class ImageDetail extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         int imgPosition;
+
         public PlaceholderFragment() {
         }
 
@@ -117,9 +142,10 @@ public class ImageDetail extends AppCompatActivity {
             Intent intent = getActivity().getIntent();
             int args = getArguments().getInt(ARG_SECTION_NUMBER);
             MediaEntry entry;
-            if(imgPosition<list.size()){
+            if (imgPosition < list.size()) {
                 entry = list.get(args);
-                Glide.with(this).load("file://"+entry.getPath()).into(view);
+                mMediaEntry = entry;
+                Glide.with(this).load("file://" + entry.getPath()).into(view);
             }
             return rootView;
         }
@@ -159,7 +185,172 @@ public class ImageDetail extends AppCompatActivity {
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return items.get(position+intent.getIntExtra("entry",0)).getTitle();
+            return items.get(position + intent.getIntExtra("entry", 0)).getTitle();
         }
     }
+
+    /**
+     * Create a new file and save it to Drive.
+     */
+
+
+    public void saveFileToDrive(){
+
+        // create new contents resource
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
+
+    }
+
+    final ResultCallback<DriveContentsResult> driveContentsCallback =
+            new ResultCallback<DriveContentsResult>() {
+                @Override
+                public void onResult(DriveContentsResult result) {
+                    if (result.getStatus().isSuccess()) {
+                            CreateFileOnGoogleDrive(result);
+                    }
+                }
+            };
+
+    public void CreateFileOnGoogleDrive(DriveContentsResult result) {
+        final DriveContents driveContents = result.getDriveContents();
+
+        // Perform I/O off the UI thread.
+        new Thread() {
+            @Override
+            public void run() {
+                // write content to DriveContents
+//                OutputStream outputStream = driveContents.getOutputStream();
+//                Writer writer = new OutputStreamWriter(outputStream);
+//                try {
+//                    writer.write("Hello abhay!");
+//                    writer.close();
+//                } catch (IOException e) {
+//                    Log.e(TAG, e.getMessage());
+//                }
+                OutputStream outputStream = driveContents.getOutputStream();
+                // Write the bitmap data from it.
+                ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
+                mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+                try {
+                    outputStream.write(bitmapStream.toByteArray());
+                } catch (IOException e1) {
+                    Log.i(TAG, "Unable to write file contents.");
+                }
+
+//                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+//                        .setTitle("abhaytest2")
+//                        .setMimeType("text/plain")
+//                        .setStarred(true).build();
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+
+                // create a file in root folder
+                Drive.DriveApi.getRootFolder(mGoogleApiClient)
+                        .createFile(mGoogleApiClient, changeSet, driveContents)
+                        .setResultCallback(fileCallback);
+            }
+        }.start();
+    }
+    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
+            ResultCallback<DriveFolder.DriveFileResult>() {
+                @Override
+                public void onResult(DriveFolder.DriveFileResult result) {
+                    if (result.getStatus().isSuccess()) {
+                        Toast.makeText(getApplicationContext(), "file created: " + "" +
+                                result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
+                    }
+                    return;
+
+                }
+            };
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mGoogleApiClient == null) {
+            // Create the API client and bind it to an instance variable.
+            // We use this instance as the callback for connection and connection
+            // failures.
+            // Since no account name is passed, the user is prompted to choose.
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_FILE)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+        // Connect the client. Once connected, the camera is launched.
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mGoogleApiClient != null) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        switch (requestCode) {
+            case REQUEST_CODE_CAPTURE_IMAGE:
+                // Called after a photo has been taken.
+                if (resultCode == Activity.RESULT_OK) {
+                    // Store the image data as a bitmap for writing later.
+                    mBitmapToSave = (Bitmap) data.getExtras().get("data");
+                }
+                break;
+            case REQUEST_CODE_CREATOR:
+                // Called after a file is saved to Drive.
+                if (resultCode == RESULT_OK) {
+                    Log.i(TAG, "Image successfully saved.");
+                    mBitmapToSave = null;
+                    // Just start the camera again for another photo.
+                    startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
+                            REQUEST_CODE_CAPTURE_IMAGE);
+                }
+                break;
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // Called whenever the API client fails to connect.
+        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
+        if (!result.hasResolution()) {
+            // show the localized error dialog.
+            GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
+            return;
+        }
+        // The failure has a resolution. Resolve it.
+        // Called typically when the app is not yet authorized, and an
+        // authorization
+        // dialog is displayed to the user.
+        try {
+            result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(TAG, "Exception while starting resolution activity", e);
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.i(TAG, "API client connected.");
+        if (mBitmapToSave == null) {
+            // This activity has no UI of its own. Just start the camera.
+            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
+                    REQUEST_CODE_CAPTURE_IMAGE);
+            return;
+        }
+        saveFileToDrive();
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        Log.i(TAG, "GoogleApiClient connection suspended");
+    }
+
+
 }

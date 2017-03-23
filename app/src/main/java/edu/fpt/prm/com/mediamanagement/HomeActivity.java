@@ -629,6 +629,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_user) {
+            mGoogleApiClient = null;
             connectApi();
         }
         return super.onOptionsItemSelected(item);
