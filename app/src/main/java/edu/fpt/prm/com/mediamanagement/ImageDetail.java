@@ -7,6 +7,7 @@ import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -20,7 +21,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
@@ -159,14 +162,34 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
             PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
+
+            final VideoView videoView = (VideoView) rootView.findViewById(R.id.video_view);
+            ImageView btnPlay = (ImageView) rootView.findViewById(R.id.btnPlay);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
             int args = getArguments().getInt(ARG_SECTION_NUMBER);
             MediaEntry entry;
-            if (imgPosition < list.size()) {
-                entry = list.get(args);
+            entry = list.get(args);
+            if(entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE){
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
+                view.setVisibility(View.VISIBLE);
+                videoView.setVisibility(View.GONE);
+                btnPlay.setVisibility(View.GONE);
             }
+            if(entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO){
+                videoView.setVideoPath(entry.getPath());
+                view.setVisibility(View.GONE);
+                videoView.setVisibility(View.VISIBLE);
+                btnPlay.setVisibility(View.VISIBLE);
+            }
+            btnPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    videoView.start();
+                    v.setVisibility(View.GONE);
+                }
+            });
+
             return rootView;
         }
     }

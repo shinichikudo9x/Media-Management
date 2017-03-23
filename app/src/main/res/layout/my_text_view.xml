@@ -17,6 +17,12 @@
             android:layout_height="wrap_content"
             android:scaleType="centerCrop"
             android:id="@+id/image_view_thum" />
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/play"
+            android:background="@android:drawable/ic_media_play"
+            android:visibility="gone"/>
 
 
 
