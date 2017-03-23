@@ -49,12 +49,9 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
         Glide.with(context).load("file://"+entry.getPath()).into(view);
 
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
-            Glide.with(context).load("file://"+entry.getPath()).into(view);
             holder.mView.findViewById(R.id.play).setVisibility(View.GONE);
         }
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(entry.getPath(),ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
-            view.setImageBitmap(bitmap);
             holder.mView.findViewById(R.id.play).setVisibility(View.VISIBLE);
         }
         holder.mView.setOnClickListener(new View.OnClickListener() {

@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -173,21 +174,16 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
                 view.setVisibility(View.VISIBLE);
                 videoView.setVisibility(View.GONE);
-                btnPlay.setVisibility(View.GONE);
             }
             if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
                 videoView.setVideoPath(entry.getPath());
                 view.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
-                btnPlay.setVisibility(View.VISIBLE);
+                MediaController controller = new MediaController(getContext());
+                controller.setAnchorView(videoView);
+                videoView.setMediaController(controller);
+                videoView.start();
             }
-            btnPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    videoView.start();
-                    v.setVisibility(View.GONE);
-                }
-            });
 
             return rootView;
         }
@@ -233,7 +229,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            mMediaEntry = items.get(position - 1);
+            mMediaEntry = items.get(position);
             return super.instantiateItem(container, position);
         }
 
@@ -290,13 +286,13 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                        .setTitle("abhaytest2")
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
-        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setTitle("Android Photo").setMimeType("image/jpeg").setStarred(true).build();
+                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
 
-        // create a file in root folder
-        Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                .createFile(mGoogleApiClient, changeSet, driveContents)
-                .setResultCallback(fileCallback);
+                // create a file in root folder
+                Drive.DriveApi.getRootFolder(mGoogleApiClient)
+                        .createFile(mGoogleApiClient, changeSet, driveContents)
+                        .setResultCallback(fileCallback);
 
     }
 
