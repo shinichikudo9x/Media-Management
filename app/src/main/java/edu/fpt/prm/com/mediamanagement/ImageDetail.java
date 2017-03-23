@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -142,7 +144,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
             ImageView view = (ImageView) rootView.findViewById(R.id.image_view);
             final VideoView videoView = (VideoView) rootView.findViewById(R.id.video_view);
-            ImageView btnPlay = (ImageView) rootView.findViewById(R.id.btnPlay);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
             int args = getArguments().getInt(ARG_SECTION_NUMBER);
@@ -152,21 +153,16 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
                 view.setVisibility(View.VISIBLE);
                 videoView.setVisibility(View.GONE);
-                btnPlay.setVisibility(View.GONE);
             }
             if(entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO){
                 videoView.setVideoPath(entry.getPath());
                 view.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
-                btnPlay.setVisibility(View.VISIBLE);
+                MediaController controller = new MediaController(getContext());
+                controller.setAnchorView(videoView);
+                videoView.setMediaController(controller);
+                videoView.start();
             }
-            btnPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    videoView.start();
-                    v.setVisibility(View.GONE);
-                }
-            });
 
             return rootView;
         }
@@ -212,7 +208,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            mMediaEntry = items.get(position - 1);
+            mMediaEntry = items.get(position);
             return super.instantiateItem(container, position);
         }
 
@@ -295,20 +291,20 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
     @Override
     protected void onResume() {
         super.onResume();
-        if (mGoogleApiClient == null) {
-            // Create the API client and bind it to an instance variable.
-            // We use this instance as the callback for connection and connection
-            // failures.
-            // Since no account name is passed, the user is prompted to choose.
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-        // Connect the client. Once connected, the camera is launched.
-        mGoogleApiClient.connect();
+//        if (mGoogleApiClient == null) {
+//            // Create the API client and bind it to an instance variable.
+//            // We use this instance as the callback for connection and connection
+//            // failures.
+//            // Since no account name is passed, the user is prompted to choose.
+//            mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                    .addApi(Drive.API)
+//                    .addScope(Drive.SCOPE_FILE)
+//                    .addConnectionCallbacks(this)
+//                    .addOnConnectionFailedListener(this)
+//                    .build();
+//        }
+//        // Connect the client. Once connected, the camera is launched.
+//        mGoogleApiClient.connect();
     }
 
     @Override
