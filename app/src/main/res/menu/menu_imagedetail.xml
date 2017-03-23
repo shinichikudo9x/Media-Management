@@ -7,21 +7,21 @@
         android:icon="@drawable/ic_add"
         android:orderInCategory="200"
         android:title="Edit picture infomation"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
     <item
         android:id="@+id/action_maps"
         android:icon="@drawable/ic_location"
         android:orderInCategory="200"
         android:title="View picture in maps"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         />
     <item
         android:id="@+id/action_upload"
         android:icon="@drawable/ic_upload"
         android:orderInCategory="200"
         android:title="Upload picture to Google Drive"
-        app:showAsAction="ifRoom"
+        app:showAsAction="always"
         ></item>
     <item
         android:id="@+id/action_delete"
