@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -162,7 +163,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
             final VideoView videoView = (VideoView) rootView.findViewById(R.id.video_view);
-            ImageView btnPlay = (ImageView) rootView.findViewById(R.id.btnPlay);
             PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
@@ -173,21 +173,16 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
                 view.setVisibility(View.VISIBLE);
                 videoView.setVisibility(View.GONE);
-                btnPlay.setVisibility(View.GONE);
             }
             if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
                 videoView.setVideoPath(entry.getPath());
                 view.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
-                btnPlay.setVisibility(View.VISIBLE);
+                MediaController controller = new MediaController(getContext());
+                controller.setAnchorView(videoView);
+                videoView.setMediaController(controller);
+                videoView.start();
             }
-            btnPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    videoView.start();
-                    v.setVisibility(View.GONE);
-                }
-            });
 
             return rootView;
         }
@@ -233,7 +228,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            mMediaEntry = items.get(position - 1);
+            mMediaEntry = items.get(position);
             return super.instantiateItem(container, position);
         }
 
@@ -267,7 +262,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         // Perform I/O off the UI thread.
 
-        // write content to DriveContents
+                // write content to DriveContents
 //                OutputStream outputStream = driveContents.getOutputStream();
 //                Writer writer = new OutputStreamWriter(outputStream);
 //                try {

@@ -355,22 +355,22 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-//        if (mGoogleApiClient == null) {
-//            /**
-//             * Create the API client and bind it to an instance variable.
-//             * We use this instance as the callback for connection and connection failures.
-//             * Since no account name is passed, the user is prompted to choose.
-//             */
-//            Log.i(TAG, "google client is null");
-//            mGoogleApiClient = new GoogleApiClient.Builder(this)
-//                    .addApi(Drive.API)
-//                    .addScope(Drive.SCOPE_FILE)
-//                    .addConnectionCallbacks(this)
-//                    .addOnConnectionFailedListener(this)
-//                    .build();
-//        }
-//
-//        mGoogleApiClient.connect();
+        if (mGoogleApiClient == null) {
+            /**
+             * Create the API client and bind it to an instance variable.
+             * We use this instance as the callback for connection and connection failures.
+             * Since no account name is passed, the user is prompted to choose.
+             */
+            Log.i(TAG, "google client is null");
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_FILE)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+
+        mGoogleApiClient.connect();
     }
 
     @Override
