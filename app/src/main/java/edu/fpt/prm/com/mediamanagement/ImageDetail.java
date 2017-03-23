@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
@@ -129,6 +131,30 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                         }
                     })
                     .setNegativeButton(android.R.string.no, null).show();
+
+        } else if (id == R.id.action_maps) {
+            ExifInterface exif = null;
+            try {
+                String la = "", lon = "";
+                exif = new ExifInterface(mMediaEntry.getPath());
+                float[] latLong = new float[2];
+                boolean hasLatLong = exif.getLatLong(latLong);
+                if (hasLatLong) {
+                    la = String.valueOf(latLong[0]);
+                    lon = String.valueOf(latLong[1]);
+                }
+//                Uri.parse("geo:<lat>,<long>?q=<lat>,<long>(Label+Name)")
+
+                Uri gmmIntentUri = Uri.parse("geo:" + la + "," + lon + "?q=" + la + "," + lon + "(Label:+" + mMediaEntry.getTitle() + ")");
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                if (mapIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(mapIntent);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
 
         }
         return super.onOptionsItemSelected(item);
@@ -268,7 +294,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         // Perform I/O off the UI thread.
 
-                // write content to DriveContents
+        // write content to DriveContents
 //                OutputStream outputStream = driveContents.getOutputStream();
 //                Writer writer = new OutputStreamWriter(outputStream);
 //                try {

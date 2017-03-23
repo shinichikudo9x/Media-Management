@@ -104,7 +104,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         //Navigation Drawer
-        if(Tool.isInternetAvailable(this))
+
             addNavigationDrawer();
 
 //        createFileOnDrive();
@@ -278,6 +278,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy-hhmmss");
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, "IMG-" + format.format(new Date()));
+
         values.put(MediaStore.Images.Media.DESCRIPTION, description);
         Uri imageUri = getContentResolver().insert(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -454,7 +455,8 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                     if (list != null && !list.isEmpty()) {
                         adapter.mDataset.clear();
                         adapter.mDataset.addAll(list);
-                        Toasty.success(getApplicationContext(), query, Toast.LENGTH_LONG).show();
+                        adapter.notifyDataSetChanged();
+                        Toasty.success(getApplicationContext(), "Found :"+list.size()+" item", Toast.LENGTH_LONG).show();
                     } else {
                         Toasty.error(getApplicationContext(), "Can't find any matched", Toast.LENGTH_LONG).show();
                     }
