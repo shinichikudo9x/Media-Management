@@ -16,4 +16,8 @@
     <string name="drawer_item_upload_all">Login google Account</string>
     <string name="title_activity_image_detail">ImageDetail</string>
     <string name="view_gdrive">View Image on Google Drive</string>
+
+    <string name="add_img_info_txt_title">Title :</string>
+    <string name="add_img_info_btn_save">Save</string>
+    <string name="img_info_name">Image Detail</string>
 </resources>

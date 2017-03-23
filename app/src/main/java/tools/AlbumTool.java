@@ -177,25 +177,14 @@ public class AlbumTool {
 
         return idCol;
     }
-    public static int setMetadata(Context context, int id, int type, String title, Long dateAdded, String description, String tag, String album, String artist){
+    public static int setMetadata(Context context, int id,  String title){
         Uri queryUri = MediaStore.Files.getContentUri("external");
 
-        String[] projection = {
-                MediaStore.Files.FileColumns.DATE_ADDED,
-                MediaStore.Files.FileColumns.TITLE,
-                MediaStore.Video.VideoColumns.ALBUM,
-                MediaStore.Video.VideoColumns.ARTIST,
-                MediaStore.Video.VideoColumns.DESCRIPTION,
-                MediaStore.Video.VideoColumns.TAGS
-        };
 
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Files.FileColumns.DATE_ADDED,dateAdded);
-        values.put(MediaStore.Files.FileColumns.TITLE,title);
-        values.put(MediaStore.Video.VideoColumns.ALBUM,album);
-        values.put(MediaStore.Video.VideoColumns.ARTIST,artist);
-        values.put(MediaStore.Video.VideoColumns.DESCRIPTION,description);
-        values.put(MediaStore.Video.VideoColumns.TAGS,tag);
+        values.put(MediaStore.Images.Media.TITLE,title);
+
+
         String where = "("+MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
                 + " OR "

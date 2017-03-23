@@ -155,7 +155,15 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 e.printStackTrace();
             }
         } else if (id == R.id.action_add) {
+                Intent edit_info = new Intent(getApplicationContext(), add_img_info.class);
+                try{
+                    edit_info.putExtra("id",mMediaEntry.getId());
+                    edit_info.putExtra("title",mMediaEntry.getTitle());
+                    edit_info.putExtra("des",mMediaEntry.getDescription());
+                }catch (Exception ex){}
 
+
+                startActivity(edit_info);
         }
         return super.onOptionsItemSelected(item);
     }

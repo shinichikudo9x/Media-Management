@@ -25,10 +25,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDkZDEpqjBeeyabC_CoCma0dCXBFPb9GlI" />
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
         <activity
             android:name=".HomeActivity"
             android:screenOrientation="sensorPortrait">
@@ -41,7 +41,10 @@
         <activity
             android:name=".ImageDetail"
             android:label="@string/title_activity_image_detail"
-            android:theme="@style/AppTheme"></activity>
+            android:theme="@style/AppTheme" />
+        <activity android:name=".add_img_info"
+            android:label="@string/img_info_name"
+            android:theme="@style/Base.Theme.AppCompat.Dialog"></activity>
     </application>
 
 </manifest>
