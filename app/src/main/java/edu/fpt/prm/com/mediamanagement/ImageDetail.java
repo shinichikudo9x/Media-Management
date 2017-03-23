@@ -130,6 +130,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
             Bundle args = new Bundle();
             args.putSerializable(ARG_SECTION_NUMBER, position);
             fragment.setArguments(args);
+
             return fragment;
         }
 
@@ -144,7 +145,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
             MediaEntry entry;
             if (imgPosition < list.size()) {
                 entry = list.get(args);
-                mMediaEntry = entry;
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
             }
             return rootView;
@@ -175,6 +175,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public int getItemPosition(Object object) {
+
             return super.getItemPosition(object);
         }
 
@@ -186,6 +187,12 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         @Override
         public CharSequence getPageTitle(int position) {
             return items.get(position + intent.getIntExtra("entry", 0)).getTitle();
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+
+            return super.instantiateItem(container, position);
         }
     }
 
@@ -243,7 +250,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
                 MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+                        .setMimeType("image/jpeg").setTitle("Android Photo.png").build();
 
                 // create a file in root folder
                 Drive.DriveApi.getRootFolder(mGoogleApiClient)
@@ -340,8 +347,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         Log.i(TAG, "API client connected.");
         if (mBitmapToSave == null) {
             // This activity has no UI of its own. Just start the camera.
-            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
-                    REQUEST_CODE_CAPTURE_IMAGE);
+
             return;
         }
         saveFileToDrive();
