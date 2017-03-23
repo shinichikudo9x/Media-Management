@@ -56,6 +56,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
@@ -99,6 +100,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
+        AlbumTool.getByDirectory(this,11);
         //get read permission
         HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -328,31 +330,65 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public void addNavigationDrawer() {
+        final HashMap<String,Integer> listMap = AlbumTool.getListDirectory(this);
         //if you want to update the items at a later time it is recommended to keep it in a variable
-        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName(R.string.drawer_item_home);
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.view_gdrive);
+        int count=0;
+        PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(count++).withName(R.string.drawer_item_home);
+        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(count++).withName(R.string.view_gdrive);
+        DrawerBuilder drawerBuilder = new DrawerBuilder().withActivity(HomeActivity.this)
+                .withToolbar(mToolbar);
+        drawerBuilder.addDrawerItems(item1,new DividerDrawerItem());
+        drawerBuilder.addDrawerItems(item2,new DividerDrawerItem());
+        for(String s:listMap.keySet()){
+            drawerBuilder.addDrawerItems(new SecondaryDrawerItem().withIdentifier(count++).withName(s));
+        }
+        final long number = count;
 
 //create the drawer and remember the `Drawer` result object
-        Drawer result = new DrawerBuilder()
-                .withActivity(HomeActivity.this)
-                .withToolbar(mToolbar)
-                .addDrawerItems(
-                        item1,
-                        new DividerDrawerItem(),
-                        item2
-                )
-                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-                    @Override
-                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-                        // do something with the clicked item :D
-                        long identifier = drawerItem.getIdentifier();
-                        if (identifier == 2) {
-                            openGDrive();
-                        }
-                        return false;
+        drawerBuilder.withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+            @Override
+            public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+                long identifier = drawerItem.getIdentifier();
+                if (identifier == 1) {
+                    openGDrive();
+                }
+                if(identifier == 0) {
+                    adapter.mDataset = AlbumTool.getAllListAlbum(getBaseContext());
+                    adapter.notifyDataSetChanged();
+                }
+                for(long i=2;i<number;i++){
+                    if(i == drawerItem.getIdentifier()){
+                        adapter.mDataset = AlbumTool.getByDirectory(getBaseContext(), listMap.get(((SecondaryDrawerItem)drawerItem).getName().getText()));
+                        adapter.notifyDataSetChanged();
                     }
-                })
-                .build();
+                }
+
+                return false;
+            }
+        });
+        drawerBuilder.build();
+//        Drawer result = new DrawerBuilder()
+//                .withActivity(HomeActivity.this)
+//                .withToolbar(mToolbar)
+//                .addDrawerItems(
+//                        item1,
+//                        new DividerDrawerItem(),
+//                        item2,
+//                        new DividerDrawerItem(),
+//
+//                )
+//                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
+//                    @Override
+//                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
+//                        // do something with the clicked item :D
+//                        long identifier = drawerItem.getIdentifier();
+//                        if (identifier == 2) {
+//                            openGDrive();
+//                        }
+//                        return false;
+//                    }
+//                })
+//                .build();
     }
 
     @Override
