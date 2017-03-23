@@ -191,9 +191,10 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-
+            mMediaEntry = items.get(position - 1);
             return super.instantiateItem(container, position);
         }
+
     }
 
     /**
@@ -201,7 +202,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
      */
 
 
-    public void saveFileToDrive(){
+    public void saveFileToDrive() {
 
         // create new contents resource
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
@@ -214,7 +215,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 @Override
                 public void onResult(DriveContentsResult result) {
                     if (result.getStatus().isSuccess()) {
-                            CreateFileOnGoogleDrive(result);
+                        CreateFileOnGoogleDrive(result);
                     }
                 }
             };
@@ -223,9 +224,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         final DriveContents driveContents = result.getDriveContents();
 
         // Perform I/O off the UI thread.
-        new Thread() {
-            @Override
-            public void run() {
+
                 // write content to DriveContents
 //                OutputStream outputStream = driveContents.getOutputStream();
 //                Writer writer = new OutputStreamWriter(outputStream);
@@ -256,9 +255,9 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
                 Drive.DriveApi.getRootFolder(mGoogleApiClient)
                         .createFile(mGoogleApiClient, changeSet, driveContents)
                         .setResultCallback(fileCallback);
-            }
-        }.start();
+
     }
+
     final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
             ResultCallback<DriveFolder.DriveFileResult>() {
                 @Override
