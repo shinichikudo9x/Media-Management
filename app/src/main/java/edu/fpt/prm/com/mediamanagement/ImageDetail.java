@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
 import tools.AlbumTool;
+import tools.Tool;
 
 public class ImageDetail extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -268,7 +270,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         // Perform I/O off the UI thread.
 
-        // write content to DriveContents
+                // write content to DriveContents
 //                OutputStream outputStream = driveContents.getOutputStream();
 //                Writer writer = new OutputStreamWriter(outputStream);
 //                try {
