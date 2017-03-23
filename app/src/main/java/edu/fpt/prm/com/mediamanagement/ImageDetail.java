@@ -20,10 +20,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -158,7 +158,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
-            ImageView view = (ImageView) rootView.findViewById(R.id.image_view);
+            PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
             int args = getArguments().getInt(ARG_SECTION_NUMBER);

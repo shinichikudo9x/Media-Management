@@ -41,6 +41,7 @@ dependencies {
     compile('com.mikepenz:materialdrawer:5.8.2@aar') {
         transitive = true
     }
+    compile 'com.github.chrisbanes:PhotoView:2.0.0'
     compile 'com.google.android.gms:play-services-drive:9.4.0'
 }
 

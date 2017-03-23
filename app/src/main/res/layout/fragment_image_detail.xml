@@ -7,7 +7,7 @@
     tools:context="edu.fpt.prm.com.mediamanagement.ImageDetail$PlaceholderFragment"
     app:theme="@style/CustomActionBar">
 
-    <ImageView
+    <com.github.chrisbanes.photoview.PhotoView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="centerInside"
