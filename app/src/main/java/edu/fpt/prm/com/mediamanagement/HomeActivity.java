@@ -2,10 +2,10 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -15,10 +15,10 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -59,24 +59,20 @@ import java.util.Date;
 
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.OnNeverAskAgain;
-import permissions.dispatcher.OnPermissionDenied;
-import permissions.dispatcher.OnShowRationale;
-import permissions.dispatcher.PermissionRequest;
-import permissions.dispatcher.RuntimePermissions;
 import tools.AlbumTool;
 import tools.Tool;
 
 import static tools.AlbumTool.getAllListAlbum;
 
-@RuntimePermissions
+
 public class HomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     private static final String TAG = HomeActivity.class.getSimpleName();
+    private static final int READ_EXTERNAL_PERMISSIONS_REQUEST = 1;
     RecyclerView recyclerView;
     GridLayoutManager mLayoutManager;
     Toolbar mToolbar;
     MyRecycleView adapter;
+    boolean openSetingPermission;
 
     //Capture
     static final int REQUEST_IMAGE_CAPTURE = 1;
@@ -94,22 +90,21 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public DriveFile file;
     Animation fab_close, fab_open;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
         //get read permission
-        HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getPermissionToReadExternalStorage();
+        }
+//        HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         //Navigation Drawer
-
-            addNavigationDrawer();
-
+        addNavigationDrawer();
 //        createFileOnDrive();
-
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         Glide.get(this).setMemoryCategory(MemoryCategory.HIGH);
         recyclerView = (RecyclerView) findViewById(R.id.listItem);
@@ -147,12 +142,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_Cam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                Intent open = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                if(open.resolveActivity(getPackageManager())!=null){
-//                    startActivityForResult(open,REQUEST_IMAGE_CAPTURE);
-//                    //hide floating_button
-//                    hide();
-//                }
                 takePhoto("");
                 hide();
                 fab.setAnimation(fab_close);
@@ -163,14 +152,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         fab_Video.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-//                fileUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
-//                takeVideoIntent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
-//                takeVideoIntent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-//                if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
-//                    startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
-//                    hide();
-//                }
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                 if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
@@ -183,10 +164,51 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onRestart() {
+        Log.e(TAG, "6");
         adapter.mDataset.clear();
         adapter.mDataset.addAll(AlbumTool.getAllListAlbum(this));
         adapter.notifyDataSetChanged();
         super.onRestart();
+    }
+
+
+    public void getPermissionToReadExternalStorage() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (shouldShowRequestPermissionRationale(
+                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+                }
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                        READ_EXTERNAL_PERMISSIONS_REQUEST);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        // Make sure it's our original READ_CONTACTS request
+        if (requestCode == READ_EXTERNAL_PERMISSIONS_REQUEST) {
+            if (grantResults.length == 1 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toasty.success(this, "Read External Storage permission granted", Toast.LENGTH_SHORT).show();
+            } else {
+
+                // showRationale = false if user clicks Never Ask Again, otherwise true
+                boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+                if (showRationale) {
+                    Log.e(TAG, "5");
+
+                } else {
+                    Toasty.error(this, "Read External storage permission denied", Toast.LENGTH_SHORT).show();
+                }
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     public static final int MEDIA_TYPE_IMAGE = 1;
@@ -197,15 +219,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-//            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-//            try {
-//                FileOutputStream fos = new FileOutputStream(pictureFile);
-//                Bitmap bit = (Bitmap) data.getExtras().get("data");
-//                bit.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-//                fos.flush();
-//                fos.close();
-//
-//            }catch (Exception ex){}
             adapter.mDataset = getAllListAlbum(getBaseContext());
             adapter.notifyDataSetChanged();
         }
@@ -232,9 +245,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-    void getReadPermission() {
-    }
 
     private static Uri getOutputMediaFileUri(int type) {
         return Uri.fromFile(getOutputMediaFile(type));
@@ -287,45 +297,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         startActivityForResult(intent, 1);
     }
 
-    @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-    void systemAlertWindowOnShowRationale(PermissionRequest request) {
-        showRationaleDialog(R.string.permission_read_external_rationale, request);
-    }
-
-    @OnPermissionDenied(Manifest.permission.READ_EXTERNAL_STORAGE)
-    void systemAlertWindowOnPermissionDenied() {
-        Toasty.error(this, getString(R.string.permission_read_external_denied), Toast.LENGTH_SHORT).show();
-    }
-
-    @OnNeverAskAgain(Manifest.permission.READ_EXTERNAL_STORAGE)
-    void systemAlertWindowOnNeverAskAgain() {
-        Toasty.error(getApplicationContext(), getString(R.string.permission_read_external_ask_again), Toast.LENGTH_SHORT).show();
-    }
-
-    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
-        new AlertDialog.Builder(this)
-                .setPositiveButton(R.string.button_allow, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(@NonNull DialogInterface dialog, int which) {
-                        request.proceed();
-                    }
-                })
-                .setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(@NonNull DialogInterface dialog, int which) {
-                        request.cancel();
-                    }
-                })
-                .setCancelable(false)
-                .setMessage(messageResId)
-                .show();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        HomeActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
-    }
 
     public void addNavigationDrawer() {
         //if you want to update the items at a later time it is recommended to keep it in a variable
@@ -358,7 +329,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-        if(Tool.isInternetAvailable(this)){
+        if (Tool.isInternetAvailable(this)) {
             if (mGoogleApiClient == null) {
                 /**
                  * Create the API client and bind it to an instance variable.
@@ -456,7 +427,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                         adapter.mDataset.clear();
                         adapter.mDataset.addAll(list);
                         adapter.notifyDataSetChanged();
-                        Toasty.success(getApplicationContext(), "Found :"+list.size()+" item", Toast.LENGTH_LONG).show();
+                        Toasty.success(getApplicationContext(), "Found :" + list.size() + " item", Toast.LENGTH_LONG).show();
                     } else {
                         Toasty.error(getApplicationContext(), "Can't find any matched", Toast.LENGTH_LONG).show();
                     }
