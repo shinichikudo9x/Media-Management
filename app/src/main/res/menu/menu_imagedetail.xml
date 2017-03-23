@@ -6,27 +6,27 @@
         android:id="@+id/action_add"
         android:icon="@drawable/ic_add"
         android:orderInCategory="200"
-        android:title="maps"
+        android:title="Edit picture infomation"
         app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/action_maps"
         android:icon="@drawable/ic_location"
         android:orderInCategory="200"
-        android:title="maps"
+        android:title="View picture in maps"
         app:showAsAction="ifRoom"
         />
     <item
         android:id="@+id/action_upload"
         android:icon="@drawable/ic_upload"
         android:orderInCategory="200"
-        android:title="Search"
+        android:title="Upload picture to Google Drive"
         app:showAsAction="ifRoom"
         ></item>
     <item
         android:id="@+id/action_delete"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="300"
-        android:title="User"
+        android:title="Delete Image"
         app:showAsAction="ifRoom"></item>
 </menu>
