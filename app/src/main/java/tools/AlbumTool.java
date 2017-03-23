@@ -1,5 +1,6 @@
 package tools;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -90,7 +91,7 @@ public class AlbumTool {
         cursor.close();
         return list.isEmpty()?null:list;
     }
-    public static ArrayList<MediaEntry> filter(Context context, @NonNull String query){
+    private static ArrayList<MediaEntry> filter(Context context, @NonNull String where){
         ArrayList<MediaEntry> list = new ArrayList<>();
         String[] projection = {
                 MediaStore.Files.FileColumns._ID,
@@ -115,7 +116,7 @@ public class AlbumTool {
                 + " OR "
                 + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
                 + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO+") AND("
-                + query +")";
+                + where +")";
 
 
         Uri queryUri = MediaStore.Files.getContentUri("external");
@@ -179,5 +180,38 @@ public class AlbumTool {
         int idCol = context.getContentResolver().delete(queryUri,where,null);
 
         return idCol;
+    }
+    public static int setMetadata(Context context, int id, int type, String title, Long dateAdded, String description, String tag, String album, String artist){
+        Uri queryUri = MediaStore.Files.getContentUri("external");
+
+        String[] projection = {
+                MediaStore.Files.FileColumns.DATE_ADDED,
+                MediaStore.Files.FileColumns.TITLE,
+                MediaStore.Video.VideoColumns.ALBUM,
+                MediaStore.Video.VideoColumns.ARTIST,
+                MediaStore.Video.VideoColumns.DESCRIPTION,
+                MediaStore.Video.VideoColumns.TAGS
+        };
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Files.FileColumns.DATE_ADDED,dateAdded);
+        values.put(MediaStore.Files.FileColumns.TITLE,title);
+        values.put(MediaStore.Video.VideoColumns.ALBUM,album);
+        values.put(MediaStore.Video.VideoColumns.ARTIST,artist);
+        values.put(MediaStore.Video.VideoColumns.DESCRIPTION,description);
+        values.put(MediaStore.Video.VideoColumns.TAGS,tag);
+        String where = "("+MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+                + " OR "
+                + MediaStore.Files.FileColumns.MEDIA_TYPE + "="
+                + MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO+") AND("
+                + MediaStore.Files.FileColumns._ID +" = ?)";
+
+        return context.getContentResolver().update(queryUri,values,where,new String[]{String.valueOf(id)});
+    }
+    public static ArrayList<MediaEntry> searchByDescription(Context context, String description){
+        String where = MediaStore.Images.Media.DESCRIPTION + " like '%"+description +"%' OR "
+                +MediaStore.Video.Media.DESCRIPTION + " like '%"+description +"%'";
+        return filter(context,where);
     }
 }

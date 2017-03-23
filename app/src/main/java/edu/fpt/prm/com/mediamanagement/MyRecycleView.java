@@ -2,6 +2,8 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -43,12 +45,17 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         if (mDataset.isEmpty()) return;
         MediaEntry entry = mDataset.get(position);
+        ImageView view = (ImageView) holder.mView.findViewById(R.id.image_view_thum);
+        Glide.with(context).load("file://"+entry.getPath()).into(view);
+
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
-            ImageView view = (ImageView) holder.mView.findViewById(R.id.image_view_thum);
             Glide.with(context).load("file://"+entry.getPath()).into(view);
+            holder.mView.findViewById(R.id.play).setVisibility(View.GONE);
         }
         if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
-
+            Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(entry.getPath(),ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+            view.setImageBitmap(bitmap);
+            holder.mView.findViewById(R.id.play).setVisibility(View.VISIBLE);
         }
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
