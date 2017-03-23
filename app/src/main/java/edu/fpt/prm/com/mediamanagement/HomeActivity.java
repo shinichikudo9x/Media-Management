@@ -25,6 +25,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -350,7 +351,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                         if (identifier == 2) {
                             Log.d(TAG, "222222");
 //                            uploadOnePhototoGDrive();
-                            connectApi();
+//                            connectApi();
                         }
                         return false;
                     }
@@ -403,7 +404,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // Called whenever the API client fails to connect.
         Log.i(TAG, "GoogleApiClient connection failed: " + connectionResult.toString());
-
+        Toasty.error(getApplicationContext(),"Please check internet",Toast.LENGTH_SHORT).show();
         if (!connectionResult.hasResolution()) {
             // show the localized error dialog.
             GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(), 0).show();
@@ -622,5 +623,14 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_user) {
+            connectApi();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
