@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimary">@color/md_blue_500</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
     </style>
@@ -16,7 +16,7 @@
     </style>
 
     <style name="MyToolbarTheme" parent="ThemeOverlay.AppCompat.ActionBar">
-        <item name="android:textColorPrimary">@color/primary_dark</item>
+        <item name="android:textColorPrimary">@color/md_blue_500</item>
         <item name="colorControlNormal">@color/colorPrimary</item>
         <item name="colorControlHighlight">#FFF</item>
     </style>

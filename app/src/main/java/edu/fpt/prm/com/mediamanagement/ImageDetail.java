@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.MediaController;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
@@ -72,12 +73,14 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
     private GoogleApiClient mGoogleApiClient;
     private Bitmap mBitmapToSave;
     static MediaEntry mMediaEntry;
+    TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_detail);
 
+        mTextView = (TextView) findViewById(R.id.textviewInsideToolbar);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
@@ -90,6 +93,8 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setCurrentItem(intent.getIntExtra("entry", 0));
         mViewPager.setPageMargin(10);
+
+
     }
 
 
@@ -228,6 +233,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             mMediaEntry = items.get(position);
+            mTextView.setText(items.get(position).getTitle());
             return super.instantiateItem(container, position);
         }
 
