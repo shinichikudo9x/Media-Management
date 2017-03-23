@@ -96,7 +96,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         mViewPager.setCurrentItem(intent.getIntExtra("entry", 0));
         mViewPager.setPageMargin(10);
 
-
     }
 
 
@@ -291,18 +290,6 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
     public void CreateFileOnGoogleDrive(DriveContentsResult result) {
         final DriveContents driveContents = result.getDriveContents();
-
-        // Perform I/O off the UI thread.
-
-        // write content to DriveContents
-//                OutputStream outputStream = driveContents.getOutputStream();
-//                Writer writer = new OutputStreamWriter(outputStream);
-//                try {
-//                    writer.write("Hello abhay!");
-//                    writer.close();
-//                } catch (IOException e) {
-//                    Log.e(TAG, e.getMessage());
-//                }
         OutputStream outputStream = driveContents.getOutputStream();
         // Write the bitmap data from it.
         ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
@@ -312,19 +299,12 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         } catch (IOException e1) {
             Log.i(TAG, "Unable to write file contents.");
         }
-
-//                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-//                        .setTitle("abhaytest2")
-//                        .setMimeType("text/plain")
-//                        .setStarred(true).build();
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
                 .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
-
         // create a file in root folder
         Drive.DriveApi.getRootFolder(mGoogleApiClient)
                 .createFile(mGoogleApiClient, changeSet, driveContents)
                 .setResultCallback(fileCallback);
-
     }
 
     final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new

@@ -1,11 +1,9 @@
 package edu.fpt.prm.com.mediamanagement;
 
-import android.Manifest;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -16,8 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -96,9 +92,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         //get read permission
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            getPermissionToReadExternalStorage();
-        }
+
 //        HomeActivityPermissionsDispatcher.getReadPermissionWithCheck(this);
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
@@ -172,44 +166,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    public void getPermissionToReadExternalStorage() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (shouldShowRequestPermissionRationale(
-                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
 
-                }
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                        READ_EXTERNAL_PERMISSIONS_REQUEST);
-            }
-        }
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        // Make sure it's our original READ_CONTACTS request
-        if (requestCode == READ_EXTERNAL_PERMISSIONS_REQUEST) {
-            if (grantResults.length == 1 &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toasty.success(this, "Read External Storage permission granted", Toast.LENGTH_SHORT).show();
-            } else {
 
-                // showRationale = false if user clicks Never Ask Again, otherwise true
-                boolean showRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-                if (showRationale) {
-                    Log.e(TAG, "5");
-
-                } else {
-                    Toasty.error(this, "Read External storage permission denied", Toast.LENGTH_SHORT).show();
-                }
-            }
-        } else {
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-    }
 
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
@@ -372,7 +331,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // Called whenever the API client fails to connect.
         Log.i(TAG, "GoogleApiClient connection failed: " + connectionResult.toString());
-        Toasty.error(getApplicationContext(), "Please check internet", Toast.LENGTH_SHORT).show();
+        Toasty.error(getApplicationContext(), "Please check again!!Connect Fail", Toast.LENGTH_SHORT).show();
         if (!connectionResult.hasResolution()) {
             // show the localized error dialog.
             GoogleApiAvailability.getInstance().getErrorDialog(this, connectionResult.getErrorCode(), 0).show();
