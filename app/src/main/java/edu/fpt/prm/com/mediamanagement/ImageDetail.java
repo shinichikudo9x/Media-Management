@@ -161,22 +161,21 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_image_detail, container, false);
-            PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
-
             final VideoView videoView = (VideoView) rootView.findViewById(R.id.video_view);
             ImageView btnPlay = (ImageView) rootView.findViewById(R.id.btnPlay);
+            PhotoView view = (PhotoView) rootView.findViewById(R.id.image_view);
             ArrayList<MediaEntry> list = AlbumTool.getAllListAlbum(getContext());
             Intent intent = getActivity().getIntent();
             int args = getArguments().getInt(ARG_SECTION_NUMBER);
             MediaEntry entry;
             entry = list.get(args);
-            if(entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE){
+            if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) {
                 Glide.with(this).load("file://" + entry.getPath()).into(view);
                 view.setVisibility(View.VISIBLE);
                 videoView.setVisibility(View.GONE);
                 btnPlay.setVisibility(View.GONE);
             }
-            if(entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO){
+            if (entry.getType() == MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO) {
                 videoView.setVideoPath(entry.getPath());
                 view.setVisibility(View.GONE);
                 videoView.setVisibility(View.VISIBLE);
