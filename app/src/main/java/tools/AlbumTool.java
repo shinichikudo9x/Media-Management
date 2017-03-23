@@ -3,15 +3,11 @@ package tools;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import entry.MediaEntry;
 
@@ -210,8 +206,7 @@ public class AlbumTool {
         return context.getContentResolver().update(queryUri,values,where,new String[]{String.valueOf(id)});
     }
     public static ArrayList<MediaEntry> searchByDescription(Context context, String description){
-        String where = MediaStore.Images.Media.DESCRIPTION + " like '%"+description +"%' OR "
-                +MediaStore.Video.Media.DESCRIPTION + " like '%"+description +"%'";
+        String where = MediaStore.Files.FileColumns.TITLE + " like '%"+description +"%'";
         return filter(context,where);
     }
 }

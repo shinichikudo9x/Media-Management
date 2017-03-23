@@ -2,13 +2,11 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.Manifest;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,7 +53,6 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.io.File;
-import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -468,6 +465,21 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
+            }
+        });
+        MenuItemCompat.setOnActionExpandListener(searchItem, new MenuItemCompat.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                // Do something when collapsed
+                adapter.mDataset.clear();
+                adapter.mDataset.addAll(AlbumTool.getAllListAlbum(getApplicationContext()));
+                adapter.notifyDataSetChanged();
+                return true;  // Return true to collapse action view
+            }
+
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
             }
         });
         return true;

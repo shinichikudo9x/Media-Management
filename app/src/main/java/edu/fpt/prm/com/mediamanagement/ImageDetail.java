@@ -21,7 +21,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import entry.MediaEntry;
 import es.dmoral.toasty.Toasty;
 import tools.AlbumTool;
-import tools.Tool;
 
 public class ImageDetail extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
