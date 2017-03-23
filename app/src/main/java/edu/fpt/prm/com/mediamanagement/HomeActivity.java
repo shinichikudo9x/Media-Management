@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,10 +17,12 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -40,11 +41,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi.DriveContentsResult;
-import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.android.gms.drive.OpenFileActivityBuilder;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
@@ -53,12 +51,7 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -95,7 +88,6 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final int REQUEST_CODE_RESOLUTION = 1;
     private static final int REQUEST_CODE_OPENER = 2;
     private GoogleApiClient mGoogleApiClient;
-    private boolean fileOperation = false;
     private DriveId mFileId;
     public DriveFile file;
     Animation fab_close, fab_open;
@@ -213,30 +205,27 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 //            }catch (Exception ex){}
             adapter.mDataset = getAllListAlbum(getBaseContext());
             adapter.notifyDataSetChanged();
-
-
-            //hoanglg
-            switch (requestCode) {
-                case REQUEST_CODE_CREATOR:
-                    if (requestCode == RESULT_OK) {
-                        Log.i(TAG, "Image successfully saved.");
-                    }
-                    break;
-                case REQUEST_CODE_OPENER:
-                    if (resultCode == RESULT_OK) {
-                        mFileId = (DriveId) data.getParcelableExtra(
-                                OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
-                        Log.e("file id", mFileId.getResourceId() + "");
-                        String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(Uri.parse(url));
-                        startActivity(i);
-                    }
-                    break;
-                default:
-                    super.onActivityResult(requestCode, resultCode, data);
-                    break;
-            }
+        }
+        switch (requestCode) {
+            case REQUEST_CODE_CREATOR:
+                if (requestCode == RESULT_OK) {
+                    Log.i(TAG, "Image successfully saved.");
+                }
+                break;
+            case REQUEST_CODE_OPENER:
+                if (resultCode == RESULT_OK) {
+                    mFileId = (DriveId) data.getParcelableExtra(
+                            OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
+                    Log.e("file id", mFileId.getResourceId() + "");
+                    String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url));
+                    startActivity(i);
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
         }
     }
 
@@ -337,7 +326,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public void addNavigationDrawer() {
         //if you want to update the items at a later time it is recommended to keep it in a variable
         PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(1).withName(R.string.drawer_item_home);
-        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.drawer_item_upload_all);
+        SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(2).withName(R.string.view_gdrive);
 
 //create the drawer and remember the `Drawer` result object
         Drawer result = new DrawerBuilder()
@@ -354,9 +343,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                         // do something with the clicked item :D
                         long identifier = drawerItem.getIdentifier();
                         if (identifier == 2) {
-                            Log.d(TAG, "222222");
-//                            uploadOnePhototoGDrive();
-//                            connectApi();
+                            openGDrive();
                         }
                         return false;
                     }
@@ -448,185 +435,25 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         mGoogleApiClient.connect();
     }
 
-    //demo create a text file
-    public void createFileOnDrive() {
-        connectApi();
-        fileOperation = true;
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
-    }
-
-    /**
-     * Create a new file and save it to Drive.
-     */
-    private void saveFileToDrive() {
-        // Start by creating a new contents, and setting a callback.
-        Log.i(TAG, "Creating new contents.");
-        final Bitmap image = mBitmapToSave;
-        new Thread() {
-            @Override
-            public void run() {
-                Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                        .setResultCallback(new ResultCallback<DriveContentsResult>() {
-                            @Override
-                            public void onResult(DriveContentsResult result) {
-                                // If the operation was not successful, we cannot do anything
-                                // and must
-                                // fail.
-                                if (!result.getStatus().isSuccess()) {
-                                    Log.i(TAG, "Failed to create new contents.");
-                                    return;
-                                }
-                                // Otherwise, we can write our data to the new contents.
-                                Log.i(TAG, "New contents created.");
-                                // Get an output stream for the contents.
-                                OutputStream outputStream = result.getDriveContents().getOutputStream();
-                                // Write the bitmap data from it.
-                                ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
-                                image.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
-                                try {
-                                    outputStream.write(bitmapStream.toByteArray());
-                                } catch (IOException e1) {
-                                    Log.i(TAG, "Unable to write file contents.");
-                                }
-                                // Create the initial metadata - MIME type and title.
-                                // Note that the user will be able to change the title later.
-                                MetadataChangeSet metadataChangeSet = new MetadataChangeSet.Builder()
-                                        .setMimeType("image/jpeg").setTitle("Android Photo.png").build();
-                                // Create an intent for the file chooser, and start it.
-                                IntentSender intentSender = Drive.DriveApi
-                                        .newCreateFileActivityBuilder()
-                                        .setInitialMetadata(metadataChangeSet)
-                                        .setInitialDriveContents(result.getDriveContents())
-                                        .build(mGoogleApiClient);
-                                try {
-                                    startIntentSenderForResult(
-                                            intentSender, REQUEST_CODE_CREATOR, null, 0, 0, 0);
-                                } catch (SendIntentException e) {
-                                    Log.i(TAG, "Failed to launch file chooser.");
-                                }
-                            }
-                        });
-            }
-        }.start();
-    }
-
-    public void uploadOnePhototoGDrive() {
-        connectApi();
-        //save bitmap with each image
-        ArrayList<MediaEntry> list = getAllListAlbum(this);
-        mBitmapToSave = BitmapFactory.decodeFile(list.get(0).getPath());
-        saveFileToDrive();
-    }
-
-    //demo create 1 file text type.
-    public void onClickCreateFile(View view) {
-        fileOperation = true;
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
-    }
-
-    public void onClickOpenFile(View view) {
-        fileOperation = false;
-
-        // create new contents resource
-        Drive.DriveApi.newDriveContents(mGoogleApiClient)
-                .setResultCallback(driveContentsCallback);
-    }
-
-    /**
-     * Open list of folder and file of the Google Drive
-     */
-    public void OpenFileFromGoogleDrive() {
-        IntentSender intentSender = Drive.DriveApi
-                .newOpenFileActivityBuilder()
-                .setMimeType(new String[]{"text/plain", "text/html"})
-                .build(mGoogleApiClient);
-        try {
-            startIntentSenderForResult(intentSender, REQUEST_CODE_OPENER, null, 0, 0, 0);
-        } catch (IntentSender.SendIntentException e) {
-            Log.w(TAG, "Unable to send intent", e);
-        }
-    }
-
-
-    /**
-     * This is Result result handler of Drive contents.
-     * this callback method call CreateFileOnGoogleDrive() method
-     * and also call OpenFileFromGoogleDrive() method, send intent onActivityResult() method to handle result.
-     */
-    final ResultCallback<DriveContentsResult> driveContentsCallback =
-            new ResultCallback<DriveContentsResult>() {
-                @Override
-                public void onResult(DriveContentsResult result) {
-                    if (result.getStatus().isSuccess()) {
-                        if (fileOperation == true) {
-                            CreateFileOnGoogleDrive(result);
-                        } else {
-                            OpenFileFromGoogleDrive();
-                        }
-                    }
-                }
-            };
-
-    /**
-     * Create a file in root folder using MetadataChangeSet object.
-     *
-     * @param result
-     */
-    public void CreateFileOnGoogleDrive(DriveContentsResult result) {
-
-
-        final DriveContents driveContents = result.getDriveContents();
-
-        // Perform I/O off the UI thread.
-        new Thread() {
-            @Override
-            public void run() {
-                // write content to DriveContents
-                OutputStream outputStream = driveContents.getOutputStream();
-                Writer writer = new OutputStreamWriter(outputStream);
-                try {
-                    writer.write("Hello hoang!");
-                    writer.close();
-                } catch (IOException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setTitle("okokokok")
-                        .setMimeType("text/plain")
-                        .setStarred(true).build();
-
-                // create a file in root folder
-                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                        .createFile(mGoogleApiClient, changeSet, driveContents)
-                        .setResultCallback(fileCallback);
-            }
-        }.start();
-    }
-
-    /**
-     * Handle result of Created file
-     */
-    final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
-            ResultCallback<DriveFolder.DriveFileResult>() {
-                @Override
-                public void onResult(DriveFolder.DriveFileResult result) {
-                    if (result.getStatus().isSuccess()) {
-                        Toasty.success(getApplicationContext(), "file created: " + "" +
-                                result.getDriveFile().getDriveId(), Toast.LENGTH_LONG).show();
-                    }
-                    return;
-                }
-            };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        final MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setQueryHint("input description here");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Toasty.success(getApplicationContext(),query,Toast.LENGTH_LONG).show();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
         return true;
     }
 
@@ -637,7 +464,45 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             mGoogleApiClient = null;
             connectApi();
         }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    /*
+    open file in google drive
+     */
+    public void openGDrive() {
+        if (mGoogleApiClient == null) {
+            connectApi();
+        }
+        Drive.DriveApi.newDriveContents(mGoogleApiClient)
+                .setResultCallback(driveContentsCallback);
+    }
+
+    final ResultCallback<DriveContentsResult> driveContentsCallback =
+            new ResultCallback<DriveContentsResult>() {
+                @Override
+                public void onResult(DriveContentsResult result) {
+                    if (result.getStatus().isSuccess()) {
+                        OpenFileFromGoogleDrive();
+                    }
+                }
+            };
+
+    /**
+     * Open list of folder and file of the Google Drive
+     */
+    public void OpenFileFromGoogleDrive() {
+        IntentSender intentSender = Drive.DriveApi
+                .newOpenFileActivityBuilder()
+                .setMimeType(new String[]{"image/jpeg", "image/png"})
+                .build(mGoogleApiClient);
+        try {
+            startIntentSenderForResult(
+                    intentSender, REQUEST_CODE_OPENER, null, 0, 0, 0);
+        } catch (SendIntentException e) {
+            Log.w(TAG, "Unable to send intent", e);
+        }
     }
 
 

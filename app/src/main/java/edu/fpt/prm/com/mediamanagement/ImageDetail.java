@@ -269,7 +269,7 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+                .setTitle("Android Photo").setMimeType("image/jpeg").setStarred(true).build();
 
         // create a file in root folder
         Drive.DriveApi.getRootFolder(mGoogleApiClient)
