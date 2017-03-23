@@ -232,8 +232,9 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
-            mMediaEntry = items.get(position);
-            mTextView.setText(items.get(position).getTitle());
+            MediaEntry mediaEntry = items.get(position > 0 ? position - 1 : position);
+            mMediaEntry = mediaEntry;
+            mTextView.setText(mMediaEntry.getTitle());
             return super.instantiateItem(container, position);
         }
 
@@ -290,13 +291,13 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
 //                        .setTitle("abhaytest2")
 //                        .setMimeType("text/plain")
 //                        .setStarred(true).build();
-                MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                        .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+        MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
+                .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
 
-                // create a file in root folder
-                Drive.DriveApi.getRootFolder(mGoogleApiClient)
-                        .createFile(mGoogleApiClient, changeSet, driveContents)
-                        .setResultCallback(fileCallback);
+        // create a file in root folder
+        Drive.DriveApi.getRootFolder(mGoogleApiClient)
+                .createFile(mGoogleApiClient, changeSet, driveContents)
+                .setResultCallback(fileCallback);
 
     }
 
