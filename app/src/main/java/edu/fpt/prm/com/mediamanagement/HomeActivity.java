@@ -359,7 +359,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                 for(long i=2;i<number;i++){
                     if(i == drawerItem.getIdentifier()){
                         adapter.mDataset = AlbumTool.getByDirectory(getBaseContext(), listMap.get(((SecondaryDrawerItem)drawerItem).getName().getText()));
-                        adapter.notifyDataSetChanged();
+                        if(adapter.mDataset != null)
+                            adapter.notifyDataSetChanged();
+                        else recreate();
                     }
                 }
 
