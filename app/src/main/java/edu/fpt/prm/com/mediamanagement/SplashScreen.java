@@ -33,7 +33,7 @@ public class SplashScreen extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToReadExternalStorage();
         } else {
-            new CountDownTimer(3000, 1000) {
+            new CountDownTimer(1500, 1000) {
                 public void onFinish() {
                     Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
                     startActivity(intent);
@@ -69,7 +69,7 @@ public class SplashScreen extends AppCompatActivity {
                         READ_EXTERNAL_PERMISSIONS_REQUEST);
             }
         } else {
-            new CountDownTimer(3000, 1000) {
+            new CountDownTimer(1500, 1000) {
                 public void onFinish() {
                     Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
                     startActivity(intent);
