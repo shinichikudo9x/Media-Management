@@ -91,6 +91,7 @@ public class SplashScreen extends AppCompatActivity {
                     grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
                 startActivity(intent);
+                finish();
                 Toasty.success(this, "Read External Storage permission granted", Toast.LENGTH_SHORT).show();
             } else {
                 Toasty.error(getApplicationContext(), "This app need your permission to get image data!", Toast.LENGTH_LONG).show();
