@@ -40,7 +40,9 @@ import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.MetadataChangeSet;
 
-import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -291,15 +293,20 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
         final DriveContents driveContents = result.getDriveContents();
         OutputStream outputStream = driveContents.getOutputStream();
         // Write the bitmap data from it.
-        ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
-        mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+//        ByteArrayOutputStream bitmapStream = new ByteArrayOutputStream();
+//        mBitmapToSave.compress(Bitmap.CompressFormat.PNG, 100, bitmapStream);
+
         try {
-            outputStream.write(bitmapStream.toByteArray());
+            File file = new File(mMediaEntry.getPath());
+            byte[] bytes = new byte[(int) file.length()];
+                    BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, bytes.length);
+            outputStream.write(bytes);
         } catch (IOException e1) {
             Log.i(TAG, "Unable to write file contents.");
         }
         MetadataChangeSet changeSet = new MetadataChangeSet.Builder()
-                .setMimeType("image/jpeg").setTitle("Android Photo.png").setStarred(true).build();
+                .setMimeType("image/jpeg").setTitle(mMediaEntry.getTitle()).setStarred(true).build();
         // create a file in root folder
         Drive.DriveApi.getRootFolder(mGoogleApiClient)
                 .createFile(mGoogleApiClient, changeSet, driveContents)

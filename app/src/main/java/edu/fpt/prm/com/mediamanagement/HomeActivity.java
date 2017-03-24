@@ -187,9 +187,9 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                             OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
                     Log.e("file id", mFileId.getResourceId() + "");
                     String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
+                    Intent intent = new Intent(HomeActivity.this,Webview.class);
+                    intent.putExtra("extra_text", url);
+                    startActivity(intent);
                 }
                 break;
             default:
@@ -291,48 +291,12 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
         drawerBuilder.build();
-//        Drawer result = new DrawerBuilder()
-//                .withActivity(HomeActivity.this)
-//                .withToolbar(mToolbar)
-//                .addDrawerItems(
-//                        item1,
-//                        new DividerDrawerItem(),
-//                        item2,
-//                        new DividerDrawerItem(),
-//
-//                )
-//                .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
-//                    @Override
-//                    public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
-//                        // do something with the clicked item :D
-//                        long identifier = drawerItem.getIdentifier();
-//                        if (identifier == 2) {
-//                            openGDrive();
-//                        }
-//                        return false;
-//                    }
-//                })
-//                .build();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-            if (mGoogleApiClient == null) {
-                /**
-                 * Create the API client and bind it to an instance variable.
-                 * We use this instance as the callback for connection and connection failures.
-                 * Since no account name is passed, the user is prompted to choose.
-                 */
-                Log.i(TAG, "google client is null");
-                mGoogleApiClient = new GoogleApiClient.Builder(this)
-                        .addApi(Drive.API)
-                        .addScope(Drive.SCOPE_FILE)
-                        .addConnectionCallbacks(this)
-                        .addOnConnectionFailedListener(this)
-                        .build();
-            }
-            mGoogleApiClient.connect();
+        initGoogleAPIClient();
     }
 
     @Override
@@ -381,7 +345,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    public void connectApi() {
+    public void initGoogleAPIClient() {
         if (mGoogleApiClient == null) {
             /**
              * Create the API client and bind it to an instance variable.
@@ -449,8 +413,11 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_user) {
-            mGoogleApiClient = null;
-            connectApi();
+            if((mGoogleApiClient != null && mGoogleApiClient.isConnected())){
+                mGoogleApiClient.clearDefaultAccountAndReconnect();
+            }
+            initGoogleAPIClient();
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -461,7 +428,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public void openGDrive() {
         if (mGoogleApiClient == null) {
-            connectApi();
+            initGoogleAPIClient();
         }
         Drive.DriveApi.newDriveContents(mGoogleApiClient)
                 .setResultCallback(driveContentsCallback);
