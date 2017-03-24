@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/action_add"
-        android:icon="@drawable/ic_add"
-        android:orderInCategory="200"
-        android:title="Edit picture infomation"
-        app:showAsAction="always"
-        />
+    <!--<item-->
+    <!--android:id="@+id/action_add"-->
+    <!--android:icon="@drawable/ic_add"-->
+    <!--android:orderInCategory="200"-->
+    <!--android:title="Edit picture infomation"-->
+    <!--app:showAsAction="always"-->
+    <!--/>-->
     <item
         android:id="@+id/action_maps"
         android:icon="@drawable/ic_location"
@@ -22,11 +22,18 @@
         android:orderInCategory="200"
         android:title="Upload picture to Google Drive"
         app:showAsAction="always"
-        ></item>
+        />
     <item
         android:id="@+id/action_delete"
         android:icon="@drawable/ic_delete"
         android:orderInCategory="300"
         android:title="Delete Image"
-        app:showAsAction="ifRoom"></item>
+        app:showAsAction="ifRoom"/>
+    <!--<item-->
+        <!--android:id="@+id/action_copy_to"-->
+        <!--android:icon="@drawable/ic_copy_to"-->
+        <!--android:orderInCategory="300"-->
+        <!--android:title="Copy To"-->
+        <!--app:showAsAction="ifRoom"/>-->
+
 </menu>

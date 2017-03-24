@@ -153,9 +153,8 @@ public class ImageDetail extends AppCompatActivity implements GoogleApiClient.Co
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (id == R.id.action_add) {
-
         }
+
         return super.onOptionsItemSelected(item);
     }
 

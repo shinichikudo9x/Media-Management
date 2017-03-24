@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -27,12 +28,23 @@ public class SplashScreen extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
         ((ProgressBar) findViewById(R.id.progress_splash)).getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.md_indigo_300), PorterDuff.Mode.SRC_ATOP);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissionToReadExternalStorage();
         } else {
-            Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
-            startActivity(intent);
+            new CountDownTimer(3000, 1000) {
+                public void onFinish() {
+                    Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+
+                public void onTick(long millisUntilFinished) {
+                }
+
+            }.start();
+
         }
     }
 
@@ -57,8 +69,17 @@ public class SplashScreen extends AppCompatActivity {
                         READ_EXTERNAL_PERMISSIONS_REQUEST);
             }
         } else {
-            Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
-            startActivity(intent);
+            new CountDownTimer(3000, 1000) {
+                public void onFinish() {
+                    Intent intent = new Intent(SplashScreen.this, HomeActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+
+                public void onTick(long millisUntilFinished) {
+                }
+
+            }.start();
         }
     }
 
