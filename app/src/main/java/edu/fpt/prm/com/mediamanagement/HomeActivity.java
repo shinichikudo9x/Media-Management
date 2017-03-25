@@ -158,9 +158,11 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onRestart() {
-        adapter.mDataset.clear();
-        adapter.mDataset.addAll(AlbumTool.getAllListAlbum(this));
-        adapter.notifyDataSetChanged();
+        if (adapter.mDataset != null) {
+            adapter.mDataset.clear();
+            adapter.mDataset.addAll(AlbumTool.getAllListAlbum(this));
+            adapter.notifyDataSetChanged();
+        }
         super.onRestart();
     }
 
@@ -187,7 +189,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                             OpenFileActivityBuilder.EXTRA_RESPONSE_DRIVE_ID);
                     Log.e("file id", mFileId.getResourceId() + "");
                     String url = "https://drive.google.com/open?id=" + mFileId.getResourceId();
-                    Intent intent = new Intent(HomeActivity.this,Webview.class);
+                    Intent intent = new Intent(HomeActivity.this, Webview.class);
                     intent.putExtra("extra_text", url);
                     startActivity(intent);
                 }
@@ -252,16 +254,16 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     public void addNavigationDrawer() {
-        final HashMap<String,Integer> listMap = AlbumTool.getListDirectory(this);
+        final HashMap<String, Integer> listMap = AlbumTool.getListDirectory(this);
         //if you want to update the items at a later time it is recommended to keep it in a variable
-        int count=0;
+        int count = 0;
         PrimaryDrawerItem item1 = new PrimaryDrawerItem().withIdentifier(count++).withName(R.string.drawer_item_home);
         SecondaryDrawerItem item2 = new SecondaryDrawerItem().withIdentifier(count++).withName(R.string.view_gdrive);
         DrawerBuilder drawerBuilder = new DrawerBuilder().withActivity(HomeActivity.this)
                 .withToolbar(mToolbar);
-        drawerBuilder.addDrawerItems(item1,new DividerDrawerItem());
-        drawerBuilder.addDrawerItems(item2,new DividerDrawerItem());
-        for(String s:listMap.keySet()){
+        drawerBuilder.addDrawerItems(item1, new DividerDrawerItem());
+        drawerBuilder.addDrawerItems(item2, new DividerDrawerItem());
+        for (String s : listMap.keySet()) {
             drawerBuilder.addDrawerItems(new SecondaryDrawerItem().withIdentifier(count++).withName(s));
         }
         final long number = count;
@@ -274,14 +276,14 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (identifier == 1) {
                     openGDrive();
                 }
-                if(identifier == 0) {
+                if (identifier == 0) {
                     adapter.mDataset = AlbumTool.getAllListAlbum(getBaseContext());
                     adapter.notifyDataSetChanged();
                 }
-                for(long i=2;i<number;i++){
-                    if(i == drawerItem.getIdentifier()){
-                        adapter.mDataset = AlbumTool.getByDirectory(getBaseContext(), listMap.get(((SecondaryDrawerItem)drawerItem).getName().getText()));
-                        if(adapter.mDataset != null)
+                for (long i = 2; i < number; i++) {
+                    if (i == drawerItem.getIdentifier()) {
+                        adapter.mDataset = AlbumTool.getByDirectory(getBaseContext(), listMap.get(((SecondaryDrawerItem) drawerItem).getName().getText()));
+                        if (adapter.mDataset != null)
                             adapter.notifyDataSetChanged();
                         else recreate();
                     }
@@ -395,9 +397,11 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 // Do something when collapsed
-                adapter.mDataset.clear();
-                adapter.mDataset.addAll(AlbumTool.getAllListAlbum(getApplicationContext()));
-                adapter.notifyDataSetChanged();
+                if (adapter.mDataset == null) {
+                    adapter.mDataset.clear();
+                    adapter.mDataset.addAll(AlbumTool.getAllListAlbum(getApplicationContext()));
+                    adapter.notifyDataSetChanged();
+                }
                 return true;  // Return true to collapse action view
             }
 
@@ -413,7 +417,7 @@ public class HomeActivity extends AppCompatActivity implements GoogleApiClient.C
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_user) {
-            if((mGoogleApiClient != null && mGoogleApiClient.isConnected())){
+            if ((mGoogleApiClient != null && mGoogleApiClient.isConnected())) {
                 mGoogleApiClient.clearDefaultAccountAndReconnect();
             }
             initGoogleAPIClient();

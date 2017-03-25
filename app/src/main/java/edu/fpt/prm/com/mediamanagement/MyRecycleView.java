@@ -2,8 +2,6 @@ package edu.fpt.prm.com.mediamanagement;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -13,7 +11,6 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 import entry.MediaEntry;
@@ -67,7 +64,7 @@ public class MyRecycleView extends RecyclerView.Adapter<MyRecycleView.ViewHolder
 
     @Override
     public int getItemCount() {
-        return mDataset.size();
+        return mDataset == null ? 0 : mDataset.size() ;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
